@@ -44,7 +44,6 @@ hooks:
       run: |
         echo "
         COSMOSDB_ENDPOINT=\"$COSMOSDB_ENDPOINT\"
-        COSMOS_KEY=\"$COSMOS_KEY\"
         COSMOS_DB_DATABASE_NAME=\"TravelAssistant\"
         AZURE_OPENAI_ENDPOINT=\"$AZURE_OPENAI_ENDPOINT\"
         AZURE_OPENAI_EMBEDDING_DEPLOYMENT=\"$AZURE_OPENAI_EMBEDDINGDEPLOYMENTID\"
@@ -53,14 +52,13 @@ hooks:
         MCP_AUTH_SECRET_KEY=\"travel-mcp-server-jwt-secret-for-local-development\"
         MCP_AUTH_TOKEN=\"travel-server-dev-token-2024\"
         MCP_SERVER_BASE_URL=\"http://localhost:8080\"
-        " > ./python/.env
+        " > ./01_exercises/python/.env
 
-        echo "✅ Environment file created at ./python/.env"
-        
+        echo "✅ Environment file created at ./01_exercises/python/.env"
+
         # Create environment file for MCP server
         echo "
         COSMOSDB_ENDPOINT=\"$COSMOSDB_ENDPOINT\"
-        COSMOS_KEY=\"$COSMOS_KEY\"
         COSMOS_DB_DATABASE_NAME=\"TravelAssistant\"
         AZURE_OPENAI_ENDPOINT=\"$AZURE_OPENAI_ENDPOINT\"
         AZURE_OPENAI_EMBEDDING_DEPLOYMENT=\"$AZURE_OPENAI_EMBEDDINGDEPLOYMENTID\"
@@ -69,10 +67,10 @@ hooks:
         MCP_AUTH_SECRET_KEY=\"travel-mcp-server-jwt-secret-for-local-development\"
         MCP_AUTH_TOKEN=\"travel-server-dev-token-2024\"
         MCP_SERVER_BASE_URL=\"http://localhost:8080\"
-        " > ./mcp_server/.env
+        " > ./01_exercises/mcp_server/.env
 
-        echo "✅ Environment file created at ./mcp_server/.env"
-        
+        echo "✅ Environment file created at ./01_exercises/mcp_server/.env"
+
         echo ""
         echo "═══════════════════════════════════════════════════════════════"
         echo "� Setting up Python environment..."
@@ -81,8 +79,8 @@ hooks:
 
         # Setup Python API environment
         echo "Setting up Python API environment..."
-        cd python
-        
+        cd 01_exercises/python
+
         # Check if virtual environment exists, create if not
         if [ ! -d "venv" ]; then
             echo "Creating Python virtual environment..."
@@ -96,24 +94,24 @@ hooks:
         # Install requirements
         echo "Installing Python dependencies..."
         if [ -f "src/app/requirements.txt" ]; then
-            python -m pip install --upgrade pip
-            python -m pip install -r src/app/requirements.txt
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install --prefer-binary -r src/app/requirements.txt
         else
             echo "⚠️  requirements.txt not found, installing basic dependencies..."
-            python -m pip install --upgrade pip
-            python -m pip install azure-cosmos azure-identity azure-openai python-dotenv openai
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install azure-cosmos azure-identity openai python-dotenv
         fi
-        
+
         # Go back to root and setup MCP server environment
-        cd ..
+        cd ../..
         echo ""
         echo "═══════════════════════════════════════════════════════════════"
         echo "🛠️ Setting up MCP Server environment..."
         echo "═══════════════════════════════════════════════════════════════"
         echo ""
 
-        cd mcp_server
-        
+        cd 01_exercises/mcp_server
+
         # Check if virtual environment exists, create if not
         if [ ! -d "venv" ]; then
             echo "Creating MCP Server virtual environment..."
@@ -127,29 +125,29 @@ hooks:
         # Install requirements
         echo "Installing MCP Server dependencies..."
         if [ -f "requirements.txt" ]; then
-            python -m pip install --upgrade pip
-            python -m pip install -r requirements.txt
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install --prefer-binary -r requirements.txt || echo "⚠️  Some MCP Server dependencies failed to install, continuing..."
         else
             echo "⚠️  requirements.txt not found, installing basic dependencies..."
-            python -m pip install --upgrade pip
-            python -m pip install azure-cosmos azure-identity azure-openai python-dotenv openai
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install azure-cosmos azure-identity openai python-dotenv
         fi
-        
-        cd ..
+
+        cd ../..
 
         echo ""
         echo "═══════════════════════════════════════════════════════════════"
         echo "� Data Loading Options"
         echo "═══════════════════════════════════════════════════════════════"
         echo ""
-        
-        cd python
+
+        cd 01_exercises/python
 
         # Load data into Cosmos DB (from python directory)
         python data/seed_data.py
-        
-        cd ..
-        
+
+        cd ../..
+
         echo ""
         echo "✅ Data loading complete!"
         echo ""
@@ -171,10 +169,10 @@ hooks:
         MCP_AUTH_SECRET_KEY=""travel-mcp-server-jwt-secret-for-local-development""
         MCP_AUTH_TOKEN=""travel-server-dev-token-2024""
         MCP_SERVER_BASE_URL=""http://localhost:8080""
-        " > ./python/.env
+        " > ./01_exercises/python/.env
 
-        Write-Host "✅ Environment file created at ./python/.env"
-        
+        Write-Host "✅ Environment file created at ./01_exercises/python/.env"
+
         # Create environment file for MCP server
         echo "
         COSMOSDB_ENDPOINT=""$env:COSMOSDB_ENDPOINT""
@@ -187,9 +185,9 @@ hooks:
         MCP_AUTH_SECRET_KEY=""travel-mcp-server-jwt-secret-for-local-development""
         MCP_AUTH_TOKEN=""travel-server-dev-token-2024""
         MCP_SERVER_BASE_URL=""http://localhost:8080""
-        " > ./mcp_server/.env
+        " > ./01_exercises/mcp_server/.env
 
-        Write-Host "✅ Environment file created at ./mcp_server/.env"
+        Write-Host "✅ Environment file created at ./01_exercises/mcp_server/.env"
         Write-Host ""
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host "� Setting up Python environment..."
@@ -198,8 +196,8 @@ hooks:
 
         # Setup Python API environment
         Write-Host "Setting up Python API environment..."
-        Set-Location python
-        
+        Set-Location 01_exercises\python
+
         # Check if virtual environment exists, create if not
         if (-not (Test-Path "venv")) {
             Write-Host "Creating Python virtual environment..."
@@ -213,25 +211,24 @@ hooks:
         # Install requirements
         Write-Host "Installing Python dependencies..."
         if (Test-Path "src\app\requirements.txt") {
-            python -m pip install --upgrade pip
-            python -m pip install -r src\app\requirements.txt
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install --prefer-binary -r src\app\requirements.txt
         } else {
             Write-Host "⚠️  requirements.txt not found, installing basic dependencies..."
-            python -m pip install --upgrade pip
-            python -m pip install azure-cosmos azure-identity azure-openai python-dotenv openai
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install azure-cosmos azure-identity openai python-dotenv
         }
-        Set-Location ..
-        
+        Set-Location ..\..
+
         # Go back to root and setup MCP server environment
-        Set-Location ..
         Write-Host ""
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host "🛠️ Setting up MCP Server environment..."
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host ""
 
-        Set-Location mcp_server
-        
+        Set-Location 01_exercises\mcp_server
+
         # Check if virtual environment exists, create if not
         if (-not (Test-Path "venv")) {
             Write-Host "Creating MCP Server virtual environment..."
@@ -245,27 +242,32 @@ hooks:
         # Install requirements
         Write-Host "Installing MCP Server dependencies..."
         if (Test-Path "requirements.txt") {
-            python -m pip install --upgrade pip
-            python -m pip install -r requirements.txt
+            python -m pip install --upgrade pip setuptools wheel
+            try {
+                python -m pip install --prefer-binary -r requirements.txt
+            } catch {
+                Write-Host "⚠️  Some MCP Server dependencies failed to install, continuing..."
+            }
         } else {
             Write-Host "⚠️  requirements.txt not found, installing basic dependencies..."
-            python -m pip install --upgrade pip
-            python -m pip install azure-cosmos azure-identity azure-openai python-dotenv openai
+            python -m pip install --upgrade pip setuptools wheel
+            python -m pip install azure-cosmos azure-identity openai python-dotenv
+        }
         }
 
         # Go back to the root and Load the data
-        Set-Location ..
+        Set-Location ..\..
         Write-Host ""
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host "📋 Data Loading Started"
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host ""
-        
-        Set-Location python
+
+        Set-Location 01_exercises\python
         # Load data into Cosmos DB (from python directory)
         python data\seed_data.py
-        
-        Set-Location ..
+
+        Set-Location ..\..
 
         Write-Host ""
         Write-Host "✅ Data loading complete!"
