@@ -253,7 +253,6 @@ hooks:
             python -m pip install --upgrade pip setuptools wheel
             python -m pip install azure-cosmos azure-identity openai python-dotenv
         }
-        }
 
         # Go back to the root and Load the data
         Set-Location ..\..
