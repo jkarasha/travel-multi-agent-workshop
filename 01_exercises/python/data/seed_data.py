@@ -735,22 +735,6 @@ def seed_all_data(containers: Dict[str, Any], dry_run: bool = False):
 
 def main():
     """Main entry point"""
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Seed Travel Assistant Cosmos DB with containers and data"
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Run without actually creating/inserting data"
-    )
-    parser.add_argument(
-        "--skip-containers",
-        action="store_true",
-        help="Skip container creation (only seed data)"
-    )
-    args = parser.parse_args()
 
     print("\n" + "=" * 70)
     print("🌍 TRAVEL ASSISTANT - COSMOS DB SETUP")
@@ -761,25 +745,17 @@ def main():
         print("   Please set COSMOSDB_ENDPOINT in your .env file")
         return
 
-    if args.dry_run:
-        print("\n⚠️  DRY RUN MODE - No changes will be made\n")
-
     # Initialize Cosmos client
     client = get_cosmos_client()
 
-    # Create database and containers
-    if not args.skip_containers:
-        database, containers = create_database_and_containers(client)
-    else:
-        print("\n⏭️  Skipping container creation")
-        database = client.get_database_client(DATABASE_NAME)
-        containers = {
-            name: database.get_container_client(name)
-            for name in CONTAINER_CONFIGS.keys()
-        }
+    database = client.get_database_client(DATABASE_NAME)
+    containers = {
+        name: database.get_container_client(name)
+        for name in CONTAINER_CONFIGS.keys()
+    }
 
     # Seed data from JSON files
-    seed_all_data(containers, dry_run=args.dry_run)
+    seed_all_data(containers)
 
     print("\n" + "=" * 70)
     print("🎉 ALL DONE!")
