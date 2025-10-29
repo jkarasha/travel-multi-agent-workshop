@@ -641,13 +641,6 @@ def seed_places(container, dry_run: bool = False):
     print(f"      • Activities: {len(activities)} (49 cities × 30 activities = 1,470 expected)")
     print(f"      • Total places: {len(all_places)}")
     
-    if dry_run:
-        print(f"\n   🔍 DRY RUN: Would seed {len(all_places)} places")
-        print(f"      • Hotels: {len(hotels)}")
-        print(f"      • Restaurants: {len(restaurants)}")
-        print(f"      • Activities: {len(activities)}")
-        return
-    
     # Count by type for verification
     type_counts = {}
     for place in all_places:
@@ -668,11 +661,8 @@ def seed_places(container, dry_run: bool = False):
     # Upload data concurrently
     upload_items_concurrent(container, all_places, "places")
     
-    end_time = time.time()
-    processing_time = end_time - start_time
-    
     # Final summary
-    print(f"\n   ✅ Seeding complete in {processing_time:.1f} seconds!")
+    print(f"\n   ✅ Seeding complete")
     print(f"      • Hotels: {len(hotels)}")
     print(f"      • Restaurants: {len(restaurants)}")
     print(f"      • Activities: {len(activities)}")
@@ -715,10 +705,10 @@ def seed_all_data(containers: Dict[str, Any], dry_run: bool = False):
     start_time = time.time()
 
     # Seed each container
-    seed_users(containers["Users"], dry_run)
-    seed_memories(containers["Memories"], dry_run)
-    seed_places(containers["Places"], dry_run)
-    seed_trips(containers["Trips"], dry_run)
+    seed_users(containers["Users"])
+    seed_memories(containers["Memories"])
+    seed_places(containers["Places"])
+    seed_trips(containers["Trips"])
 
     end_time = time.time()
     total_time = end_time - start_time
