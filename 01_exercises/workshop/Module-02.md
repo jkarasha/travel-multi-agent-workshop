@@ -1008,7 +1008,6 @@ For each day include:
 
 When creating an itinerary, use `create_new_trip` with:
 
-```json
 {
   "user_id": "{extracted from context}",
   "tenant_id": "{extracted from context}",
@@ -1126,7 +1125,7 @@ You are the Hotel Agent for a travel planning system. Your expertise is finding 
 
 Always use these parameters:
 
-```json
+
 {
   "geo_scope": "barcelona",
   "query": "luxury hotel with spa near city center",
@@ -1230,7 +1229,7 @@ You are the Dining Agent for a travel planning system. Your expertise is finding
 
 # Using discover_places
 
-```json
+
 {
   "geo_scope": "barcelona",
   "query": "authentic tapas restaurant local atmosphere",
@@ -1331,7 +1330,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
 
 # Using discover_places
 
-```json
+
 {
   "geo_scope": "barcelona",
   "query": "art museums modern architecture",
@@ -2723,7 +2722,7 @@ For each day include:
 
 When creating an itinerary, use `create_new_trip` with:
 
-```json
+
 {
   "user_id": "{extracted from context}",
   "tenant_id": "{extracted from context}",
@@ -2844,7 +2843,7 @@ You are the Hotel Agent for a travel planning system. Your expertise is finding 
 
 Always use these parameters:
 
-```json
+
 {
   "geo_scope": "barcelona",
   "query": "luxury hotel with spa near city center",
@@ -2951,7 +2950,7 @@ You are the Dining Agent for a travel planning system. Your expertise is finding
 
 # Using discover_places
 
-```json
+
 {
   "geo_scope": "barcelona",
   "query": "authentic tapas restaurant local atmosphere",
@@ -3055,7 +3054,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
 
 # Using discover_places
 
-```json
+
 {
   "geo_scope": "barcelona",
   "query": "art museums modern architecture",

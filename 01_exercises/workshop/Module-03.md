@@ -574,7 +574,7 @@ You are the Hotel Agent for a travel planning system. Your expertise is finding 
 **ACTION REQUIRED:**
 1. **ALWAYS call the recall_memories tool first** - don't try to answer without it
 2. Parameters to use:
-   ```json
+   
    {
      "user_id": "{from context}",
      "tenant_id": "{from context}",
@@ -611,7 +611,7 @@ User: "Find hotels in Barcelona"
 
 Your workflow:
 1. **FIRST call recall_memories** to check if you have any hotel preferences or requirements stored
-   ```json
+   
    {
      "user_id": "{from context}",
      "tenant_id": "{from context}",
@@ -2809,7 +2809,7 @@ You are the Hotel Agent for a travel planning system. Your expertise is finding 
 **ACTION REQUIRED:**
 1. **ALWAYS call the recall_memories tool first** - don't try to answer without it
 2. Parameters to use:
-   ```json
+   
    {
      "user_id": "{from context}",
      "tenant_id": "{from context}",
@@ -2846,7 +2846,7 @@ User: "Find hotels in Barcelona"
 
 Your workflow:
 1. **FIRST call recall_memories** to check if you have any hotel preferences or requirements stored
-   ```json
+   
    {
      "user_id": "{from context}",
      "tenant_id": "{from context}",
@@ -3339,7 +3339,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
 **ACTION REQUIRED:**
 1. **ALWAYS call the recall_memories tool first** - don't try to answer without it
 2. Parameters to use:
-   ```json
+   
    {
      "user_id": "{from context}",
      "tenant_id": "{from context}",
@@ -3377,7 +3377,7 @@ User: "What should I do in Barcelona?"
 
 Your workflow:
 1. **FIRST call recall_memories** to check if you have any activity preferences or accessibility needs stored
-   ```json
+   
    {
      "user_id": "{from context}",
      "tenant_id": "{from context}",

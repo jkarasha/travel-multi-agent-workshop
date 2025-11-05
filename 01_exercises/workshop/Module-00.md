@@ -35,15 +35,7 @@ Open PowerShell and navigate to the workshop exercises directory:
 cd \multi-agent-workshop\01_exercises
 ```
 
-### Step 2: Create a Python Virtual Environment
-
-Create a virtual environment named `venv` at the `01_exercises` level:
-
-```powershell
-python -m venv venv
-```
-
-### Step 3: Activate the Virtual Environment
+### Step 2: Activate the Virtual Environment
 
 Activate the virtual environment using PowerShell:
 
@@ -58,25 +50,6 @@ You should see `(venv)` appear in your terminal prompt, indicating the virtual e
 > ```powershell
 > Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 > ```
-
-### Step 4: Install Python Dependencies
-
-With the virtual environment activated, install the required packages:
-
-```powershell
-pip install -r requirements.txt
-```
-
-This will install all necessary dependencies including:
-
-- FastAPI and Uvicorn (API server)
-- LangGraph and LangChain (agent framework)
-- Azure SDK packages (Cosmos DB, OpenAI)
-- Other supporting libraries
-
-> **Note:** The `.env` file in the `python` directory is already configured with your Azure resource values.
-
----
 
 ## Activity 2: Seed the Database
 
