@@ -183,10 +183,40 @@ hooks:
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host ""
 
-        Set-Location python
-        # Load data into Cosmos DB (from python directory)
-        python data\seed_data.py
-        Set-Location ..
+        # Data seeding with error handling
+        if (-not (Test-Path "python")) {
+            Write-Host "⚠️  WARNING: python directory not found!" -ForegroundColor Yellow
+            Write-Host "Skipping data seed - you'll need to run it manually later" -ForegroundColor Yellow
+        } elseif (-not (Test-Path "python\data\seed_data.py")) {
+            Write-Host "⚠️  WARNING: seed_data.py not found!" -ForegroundColor Yellow
+            Write-Host "Skipping data seed - you'll need to run it manually later" -ForegroundColor Yellow
+        } else {
+            try {
+                Push-Location python
+                Write-Host "Running seed_data.py..." -ForegroundColor Cyan
+                
+                # Capture output and errors
+                $output = python data\seed_data.py 2>&1
+                $exitCode = $LASTEXITCODE
+                
+                # Display output
+                $output | ForEach-Object { Write-Host $_ }
+                
+                if ($exitCode -eq 0) {
+                    Write-Host "✅ Data seeded successfully!" -ForegroundColor Green
+                } else {
+                    Write-Host "⚠️  WARNING: seed_data.py returned exit code $exitCode" -ForegroundColor Yellow
+                    Write-Host "This might mean data already exists (which is OK) or there was an error." -ForegroundColor Yellow
+                    Write-Host "Check the output above for details." -ForegroundColor Yellow
+                }
+            } catch {
+                Write-Host "⚠️  WARNING: Failed to run seed_data.py" -ForegroundColor Yellow
+                Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Yellow
+                Write-Host "You may need to run it manually later." -ForegroundColor Yellow
+            } finally {
+                Pop-Location
+            }
+        }
 
         Write-Host ""
         Write-Host "✅ Setup complete!"
