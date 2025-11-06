@@ -29,11 +29,7 @@ Welcome to the Travel Assistant Multi-Agent Workshop! In this module, you'll set
 
 ### Step 1: Navigate to the Workshop Directory
 
-Open PowerShell and navigate to the workshop exercises directory:
-
-```powershell
-cd \multi-agent-workshop\01_exercises
-```
+Open PowerShell and navigate to the workshop `\travel-multi-agent-workshop\01_exercises` directory.
 
 ### Step 2: Activate the Virtual Environment
 
@@ -360,7 +356,7 @@ Try selecting different cities and categories to browse the available places:
 Click on "Chat Assistant" in the navigation menu. You should see:
 
 - Chat interface with message input
-- **Expected behavior**: The chat assistant will not respond yet
+- **Expected behavior**: The chat assistant will respond with "Chat completion not implemented yet."
 - **This is normal!** We haven't implemented the agents yet
 
 > **Note:** In Module 01, you'll build your first agent to make the chat assistant functional.

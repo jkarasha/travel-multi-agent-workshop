@@ -67,7 +67,7 @@ from src.app.services.azure_cosmos_db import (
     create_user, get_all_users, get_user_by_id,
     store_debug_log, get_debug_log, query_debug_logs
 )
-from src.app.travel_agents import setup_agents, build_agent_graph, cleanup_persistent_session
+#from src.app.travel_agents import setup_agents, build_agent_graph, cleanup_persistent_session
 
 # Load environment variables
 load_dotenv(override=False)
@@ -279,83 +279,83 @@ agent_mapping = {
 }
 
 
-@app.on_event("startup")
-async def initialize_agents():
-    """Initialize agents with retry logic to handle MCP server startup timing"""
-    global _agents_initialized, _graph, _checkpointer
+# @app.on_event("startup")
+# async def initialize_agents():
+#     """Initialize agents with retry logic to handle MCP server startup timing"""
+#     global _agents_initialized, _graph, _checkpointer
 
-    logger.info("Starting agent initialization with retry logic...")
+#     logger.info("Starting agent initialization with retry logic...")
 
-    max_retries = 5
-    retry_delay = 10  # seconds
+#     max_retries = 5
+#     retry_delay = 10  # seconds
 
-    for attempt in range(max_retries):
-        try:
-            logger.info(f"Attempt {attempt + 1}/{max_retries}: Initializing agents...")
-            await setup_agents()
-            _graph = build_agent_graph()
-            _checkpointer = get_checkpoint_saver()
-            _agents_initialized = True
-            logger.info("Agents initialized successfully!")
-            return
-        except Exception as e:
-            logger.error(f"Failed to initialize agents (attempt {attempt + 1}/{max_retries}): {e}")
-            logger.error(f"Exception type: {type(e).__name__}")
-            logger.error(f"Full traceback:")
-            logger.error(traceback.format_exc())
+#     for attempt in range(max_retries):
+#         try:
+#             logger.info(f"Attempt {attempt + 1}/{max_retries}: Initializing agents...")
+#             await setup_agents()
+#             _graph = build_agent_graph()
+#             _checkpointer = get_checkpoint_saver()
+#             _agents_initialized = True
+#             logger.info("Agents initialized successfully!")
+#             return
+#         except Exception as e:
+#             logger.error(f"Failed to initialize agents (attempt {attempt + 1}/{max_retries}): {e}")
+#             logger.error(f"Exception type: {type(e).__name__}")
+#             logger.error(f"Full traceback:")
+#             logger.error(traceback.format_exc())
 
-            # If it's a TaskGroup exception, try to extract sub-exceptions
-            if hasattr(e, '__cause__'):
-                logger.error(f"Underlying cause: {e.__cause__}")
-            if hasattr(e, '__context__'):
-                logger.error(f"Exception context: {e.__context__}")
+#             # If it's a TaskGroup exception, try to extract sub-exceptions
+#             if hasattr(e, '__cause__'):
+#                 logger.error(f"Underlying cause: {e.__cause__}")
+#             if hasattr(e, '__context__'):
+#                 logger.error(f"Exception context: {e.__context__}")
 
-            # ExceptionGroup (Python 3.11+) stores sub-exceptions in .exceptions attribute
-            if hasattr(e, 'exceptions'):
-                logger.error(f"TaskGroup contained {len(e.exceptions)} sub-exception(s):")
-                for idx, sub_exc in enumerate(e.exceptions, 1):
-                    logger.error(f"\n   --- Sub-exception #{idx} ---")
-                    logger.error(f"   Type: {type(sub_exc).__name__}")
-                    logger.error(f"   Message: {sub_exc}")
-                    logger.error(f"   Traceback:")
-                    sub_tb = ''.join(traceback.format_exception(type(sub_exc), sub_exc, sub_exc.__traceback__))
-                    for line in sub_tb.split('\n'):
-                        logger.error(f"   {line}")
+#             # ExceptionGroup (Python 3.11+) stores sub-exceptions in .exceptions attribute
+#             if hasattr(e, 'exceptions'):
+#                 logger.error(f"TaskGroup contained {len(e.exceptions)} sub-exception(s):")
+#                 for idx, sub_exc in enumerate(e.exceptions, 1):
+#                     logger.error(f"\n   --- Sub-exception #{idx} ---")
+#                     logger.error(f"   Type: {type(sub_exc).__name__}")
+#                     logger.error(f"   Message: {sub_exc}")
+#                     logger.error(f"   Traceback:")
+#                     sub_tb = ''.join(traceback.format_exception(type(sub_exc), sub_exc, sub_exc.__traceback__))
+#                     for line in sub_tb.split('\n'):
+#                         logger.error(f"   {line}")
 
-            if attempt < max_retries - 1:
-                logger.info(f"Retrying in {retry_delay} seconds...")
-                await asyncio.sleep(retry_delay)
-            else:
-                logger.error("All retry attempts failed. Service will start but agents won't be available.")
+#             if attempt < max_retries - 1:
+#                 logger.info(f"Retrying in {retry_delay} seconds...")
+#                 await asyncio.sleep(retry_delay)
+#             else:
+#                 logger.error("All retry attempts failed. Service will start but agents won't be available.")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup resources on shutdown"""
     logger.info("Shutting down Travel Assistant API...")
-    await cleanup_persistent_session()
+    # await cleanup_persistent_session()
     logger.info("Cleanup complete")
 
 
-async def ensure_agents_initialized():
-    """Ensure agents are initialized before handling requests"""
-    global _agents_initialized
+# async def ensure_agents_initialized():
+#     """Ensure agents are initialized before handling requests"""
+#     global _agents_initialized
 
-    if not _agents_initialized:
-        logger.info("Initializing agents on demand...")
-        try:
-            await setup_agents()
-            global _graph, _checkpointer
-            _graph = build_agent_graph()
-            _checkpointer = get_checkpoint_saver()
-            _agents_initialized = True
-            logger.info("Agents initialized successfully!")
-        except Exception as e:
-            logger.error(f"Failed to initialize agents: {e}")
-            raise HTTPException(
-                status_code=503,
-                detail="MCP service unavailable. Please try again in a few moments."
-            )
+#     if not _agents_initialized:
+#         logger.info("Initializing agents on demand...")
+#         try:
+#             await setup_agents()
+#             global _graph, _checkpointer
+#             _graph = build_agent_graph()
+#             _checkpointer = get_checkpoint_saver()
+#             _agents_initialized = True
+#             logger.info("Agents initialized successfully!")
+#         except Exception as e:
+#             logger.error(f"Failed to initialize agents: {e}")
+#             raise HTTPException(
+#                 status_code=503,
+#                 detail="MCP service unavailable. Please try again in a few moments."
+#             )
 
 
 def get_compiled_graph():
@@ -886,6 +886,125 @@ def process_messages_background(message_tuples: List[tuple], userId: str, tenant
         logger.error(f"Error storing messages: {e}")
 
 
+# @app.post(
+#     "/tenant/{tenantId}/user/{userId}/sessions/{sessionId}/completion",
+#     tags=[CHAT_TAG],
+#     summary="Chat Completion",
+#     description="Send a message and get AI agent response (main chat endpoint)",
+#     response_model=List[MessageModel]
+# )
+# async def get_chat_completion(
+#         tenantId: str,
+#         userId: str,
+#         sessionId: str,
+#         background_tasks: BackgroundTasks,
+#         request_body: str = Body(..., media_type="application/json"),
+#         workflow=Depends(get_compiled_graph)
+# ):
+#     """
+#     Send a message and receive AI response from the multi-agent system.
+#
+#     This endpoint:
+#     1. Resumes conversation from last checkpoint
+#     2. Routes message through orchestrator to appropriate agent
+#     3. Stores messages in Cosmos DB
+#     4. Returns user message + agent response
+#
+#     Args:
+#         tenantId: Tenant identifier
+#         userId: User identifier
+#         sessionId: Session identifier
+#         request_body: User message as plain text string
+#
+#     Returns:
+#         List of MessageModel objects (user message + agent response)
+#     """
+#     # Ensure agents are initialized
+#     await ensure_agents_initialized()
+#
+#     if not request_body.strip():
+#         raise HTTPException(status_code=400, detail="Request body cannot be empty")
+#
+#     try:
+#         # Configuration for LangGraph
+#         config = {
+#             "configurable": {
+#                 "thread_id": sessionId,
+#                 "checkpoint_ns": "",
+#                 "userId": userId,
+#                 "tenantId": tenantId
+#             }
+#         }
+#
+#         # Retrieve last checkpoint
+#         checkpoints = list(_checkpointer.list(config))
+#         last_active_agent = "orchestrator"
+#
+#         if not checkpoints:
+#             # No previous state - start fresh
+#             new_state = {"messages": [{"role": "user", "content": request_body}]}
+#             response_data = await workflow.ainvoke(new_state, config, stream_mode="updates")
+#         else:
+#             # Resume from last checkpoint
+#             last_checkpoint = checkpoints[-1]
+#             last_state = last_checkpoint.checkpoint
+#
+#             if "messages" not in last_state:
+#                 last_state["messages"] = []
+#
+#             last_state["messages"].append({"role": "user", "content": request_body})
+#
+#             # Get active agent from state
+#             if "channel_versions" in last_state:
+#                 for channel, version in last_state["channel_versions"].items():
+#                     if channel != "__start__" and version > 0:
+#                         last_active_agent = channel
+#                         break
+#
+#             response_data = await workflow.ainvoke(last_state, config, stream_mode="updates")
+#
+#         # Store debug log in Cosmos DB
+#         debug_log_id = store_debug_log_from_response(sessionId, tenantId, userId, response_data)
+#
+#         # Extract messages
+#         messages = extract_relevant_messages(
+#             debug_log_id, last_active_agent, response_data,
+#             tenantId, userId, sessionId
+#         )
+#
+#         # Store messages SYNCHRONOUSLY before returning (not in background)
+#         # This ensures they're in the database when we retrieve all messages
+#         process_messages_background(messages, userId, tenantId, sessionId)
+#
+#         # Now retrieve ALL messages from the database (including the ones we just stored)
+#         all_messages = get_session_messages(sessionId, tenantId, userId)
+#         
+#         # Convert to MessageModel format for API response
+#         return [
+#             MessageModel(
+#                 id=msg.get("id", str(uuid.uuid4())),
+#                 type="message",
+#                 sessionId=sessionId,
+#                 tenantId=tenantId,
+#                 userId=userId,
+#                 timeStamp=msg.get("ts") or msg.get("timeStamp", datetime.utcnow().isoformat()),
+#                 sender=msg.get("sender", "Assistant"),
+#                 senderRole="User" if msg.get("role") == "user" else "Assistant",
+#                 text=msg.get("content", ""),
+#                 debugLogId=msg.get("debugLogId", ""),
+#                 tokensUsed=msg.get("tokensUsed", 0),
+#                 rating=msg.get("rating")
+#             )
+#             for msg in all_messages
+#         ]
+#
+#     except Exception as e:
+#         logger.error(f"Error in chat completion: {e}")
+#         import traceback
+#         logger.error(traceback.format_exc())
+#         raise HTTPException(status_code=500, detail=f"Chat completion failed: {str(e)}")
+
+
 @app.post(
     "/tenant/{tenantId}/user/{userId}/sessions/{sessionId}/completion",
     tags=[CHAT_TAG],
@@ -898,111 +1017,27 @@ async def get_chat_completion(
         userId: str,
         sessionId: str,
         background_tasks: BackgroundTasks,
-        request_body: str = Body(..., media_type="application/json"),
-        workflow=Depends(get_compiled_graph)
+        request_body: str = Body(..., media_type="application/json")
 ):
     """
-    Send a message and receive AI response from the multi-agent system.
-
-    This endpoint:
-    1. Resumes conversation from last checkpoint
-    2. Routes message through orchestrator to appropriate agent
-    3. Stores messages in Cosmos DB
-    4. Returns user message + agent response
-
-    Args:
-        tenantId: Tenant identifier
-        userId: User identifier
-        sessionId: Session identifier
-        request_body: User message as plain text string
-
-    Returns:
-        List of MessageModel objects (user message + agent response)
+    Simple stub for chat completion - not yet implemented.
     """
-    # Ensure agents are initialized
-    await ensure_agents_initialized()
-
-    if not request_body.strip():
-        raise HTTPException(status_code=400, detail="Request body cannot be empty")
-
-    try:
-        # Configuration for LangGraph
-        config = {
-            "configurable": {
-                "thread_id": sessionId,
-                "checkpoint_ns": "",
-                "userId": userId,
-                "tenantId": tenantId
-            }
-        }
-
-        # Retrieve last checkpoint
-        checkpoints = list(_checkpointer.list(config))
-        last_active_agent = "orchestrator"
-
-        if not checkpoints:
-            # No previous state - start fresh
-            new_state = {"messages": [{"role": "user", "content": request_body}]}
-            response_data = await workflow.ainvoke(new_state, config, stream_mode="updates")
-        else:
-            # Resume from last checkpoint
-            last_checkpoint = checkpoints[-1]
-            last_state = last_checkpoint.checkpoint
-
-            if "messages" not in last_state:
-                last_state["messages"] = []
-
-            last_state["messages"].append({"role": "user", "content": request_body})
-
-            # Get active agent from state
-            if "channel_versions" in last_state:
-                for channel, version in last_state["channel_versions"].items():
-                    if channel != "__start__" and version > 0:
-                        last_active_agent = channel
-                        break
-
-            response_data = await workflow.ainvoke(last_state, config, stream_mode="updates")
-
-        # Store debug log in Cosmos DB
-        debug_log_id = store_debug_log_from_response(sessionId, tenantId, userId, response_data)
-
-        # Extract messages
-        messages = extract_relevant_messages(
-            debug_log_id, last_active_agent, response_data,
-            tenantId, userId, sessionId
+    return [
+        MessageModel(
+            id=str(uuid.uuid4()),
+            type="message",
+            sessionId=sessionId,
+            tenantId=tenantId,
+            userId=userId,
+            timeStamp=datetime.utcnow().isoformat(),
+            sender="Assistant",
+            senderRole="Assistant",
+            text="Chat completion not implemented yet",
+            debugLogId="",
+            tokensUsed=0,
+            rating=None
         )
-
-        # Store messages SYNCHRONOUSLY before returning (not in background)
-        # This ensures they're in the database when we retrieve all messages
-        process_messages_background(messages, userId, tenantId, sessionId)
-
-        # Now retrieve ALL messages from the database (including the ones we just stored)
-        all_messages = get_session_messages(sessionId, tenantId, userId)
-        
-        # Convert to MessageModel format for API response
-        return [
-            MessageModel(
-                id=msg.get("id", str(uuid.uuid4())),
-                type="message",
-                sessionId=sessionId,
-                tenantId=tenantId,
-                userId=userId,
-                timeStamp=msg.get("ts") or msg.get("timeStamp", datetime.utcnow().isoformat()),
-                sender=msg.get("sender", "Assistant"),
-                senderRole="User" if msg.get("role") == "user" else "Assistant",
-                text=msg.get("content", ""),
-                debugLogId=msg.get("debugLogId", ""),
-                tokensUsed=msg.get("tokensUsed", 0),
-                rating=msg.get("rating")
-            )
-            for msg in all_messages
-        ]
-
-    except Exception as e:
-        logger.error(f"Error in chat completion: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Chat completion failed: {str(e)}")
+    ]
 
 
 @app.post(

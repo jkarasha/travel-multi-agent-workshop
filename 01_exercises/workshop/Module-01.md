@@ -155,6 +155,8 @@ PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompts')
 
 # define agents & tools
 
+# define functions
+
 # define workflow
 
 ```
@@ -188,7 +190,7 @@ def filter_tools_by_prefix(tools, prefixes):
 
 ### Global Variables
 
-Replace the comment with the following:
+Navigate to the # global variables comment and replace the comment with the following:
 
 ```python
 # Global variables for MCP session management
@@ -539,6 +541,26 @@ def transfer_to_itinerary_generator(
         "reason": reason,
         "message": "Transferring to Itinerary Generator to create your day-by-day plan."
     })
+# ============================================================================
+# Server Startup
+# ============================================================================
+
+if __name__ == "__main__":
+    print("Starting Travel Assistant MCP server...")
+
+    # Configure server options
+    server_options = {
+        "transport": "streamable-http"
+    }
+
+    print("🔓 Starting server without built-in authentication...")
+    print("💡 For OAuth, use a reverse proxy like nginx or API gateway")
+
+    try:
+        mcp.run(**server_options)
+    except Exception as e:
+        print(f"❌ Failed to start server: {e}")
+        sys.exit(1)    
 ```
 
 Next, navigate back to the `travel_agents.py` file.
@@ -876,6 +898,16 @@ if __name__ == "__main__":
 
 For the rest of the lab, we're going to be testing using the front end by wiring up the API layer, so you can skip to that section below. But for reference, if you wanted bypass the front end and test the backend in a command line fashion, you could run the below:
 
+**Linux/Mac/WSL/Codespaces:**
+```shell
+python -m src.app.travel_agents
+```
+
+**Windows (PowerShell):**
+```powershell
+python -m src.app.travel_agents
+```
+
 To test your travel agent system, you need to start two components in separate terminal windows:
 
 1. **MCP Server** - Provides the tools and capabilities for the agents
@@ -885,17 +917,11 @@ To test your travel agent system, you need to start two components in separate t
 
 Open a **first terminal window** and run the following commands:
 
-**macOS/Linux/WSL/Codespaces:**
-
-```shell
-cd multi-agent-workshop/01_exercises
-python mcp_server/mcp_http_server.py
-```
-
 **Windows(PowerShell/CMD):**
 
 ```powershell
-cd C:\multi-agent-workshop\01_exercises
+cd 01_exercises
+venv\Scripts\activate.bat
 python mcp_server/mcp_http_server.py
 ```
 
@@ -927,17 +953,12 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 
 Open a second terminal window (keep the first one running) and run the following commands:
 
-**macOS/Linux/WSL/Codespaces:**
-
-```shell
-cd multi-agent-workshop/01_exercises/python
-python -m src.app.travel_agents
-```
-
 **Windows(PowerShell/CMD):**
 
 ```powershell
-cd C:\multi-agent-workshop\01_exercises\python
+cd 01_exercises
+.\venv\Scripts\activate.bat
+cd python
 python -m src.app.travel_agents
 ```
 
@@ -989,6 +1010,56 @@ Now let's set up the API layer so that the front end can talk properly to your n
 
 The travel assistant uses a **FastAPI** backend that exposes REST endpoints for the Angular frontend. The API layer acts as a bridge between the web interface and your LangGraph multi-agent system.
 
+First, locate this line and uncomment it:
+
+```python
+#from src.app.travel_agents import setup_agents, build_agent_graph, cleanup_persistent_session
+```
+Next, find the following two commented out functions and uncomment them:
+
+- initialize_agents
+- ensure_agents_initialized
+
+Lastly, find the below code, comment it out, and uncomment the fully implemented version above it.
+
+```python
+@app.post(
+    "/tenant/{tenantId}/user/{userId}/sessions/{sessionId}/completion",
+    tags=[CHAT_TAG],
+    summary="Chat Completion",
+    description="Send a message and get AI agent response (main chat endpoint)",
+    response_model=List[MessageModel]
+)
+async def get_chat_completion(
+        tenantId: str,
+        userId: str,
+        sessionId: str,
+        background_tasks: BackgroundTasks,
+        request_body: str = Body(..., media_type="application/json")
+):
+    """
+    Simple stub for chat completion - not yet implemented.
+    """
+    return [
+        MessageModel(
+            id=str(uuid.uuid4()),
+            type="message",
+            sessionId=sessionId,
+            tenantId=tenantId,
+            userId=userId,
+            timeStamp=datetime.utcnow().isoformat(),
+            sender="Assistant",
+            senderRole="Assistant",
+            text="Chat completion not implemented yet",
+            debugLogId="",
+            tokensUsed=0,
+            rating=None
+        )
+    ]
+```
+
+Now, stop travel agents windows you have running, but keep the MCP server running.
+
 You need to have **three components** running simultaneously:
 
 1. **MCP Server** (should already be running from previous steps)
@@ -999,18 +1070,11 @@ You need to have **three components** running simultaneously:
 
 Open a **new terminal window** (your third terminal - keep the MCP server running) and execute:
 
-**macOS/Linux/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises/python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
-```
 
 **Windows (PowerShell/CMD):**
 
 ```powershell
-cd C:\multi-agent-workshop\01_exercises\python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
+cd 01_exercises; .\venv\Scripts\activate.bat; cd python; uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 You should see output similar to:

@@ -326,6 +326,9 @@ yarn-error.log*
 !**/abbreviations.json
 !**/*template*.json
 !**/package*.json
+!**/angular.json
+!**/tsconfig*.json
+!**/proxy.conf.json
 
 # MacOS
 .DS_Store
