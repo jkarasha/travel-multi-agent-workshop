@@ -59,7 +59,7 @@ openai_client = AzureOpenAI(
     azure_ad_token_provider=token_provider,
 )
 
-logger.info(f"✅ Azure OpenAI initialized")
+logger.info(f"Azure OpenAI initialized")
 logger.info(f"   Endpoint: {AZURE_OPENAI_ENDPOINT}")
 logger.info(f"   Chat Model: {AZURE_OPENAI_DEPLOYMENT}")
 logger.info(f"   Embedding Model: {AZURE_OPENAI_EMBEDDING_DEPLOYMENT}")

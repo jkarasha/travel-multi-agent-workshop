@@ -2285,7 +2285,7 @@ WHERE c.userId = 'tony' AND c.superseded = false
 **Common Issues:**
 
 | Problem                      | Quick Fix                                                           |
-| ---------------------------- | ------------------------------------------------------------------- |
+|------------------------------|---------------------------------------------------------------------|
 | Preferences not extracted    | Check `orchestrator.prompty` has Step 1: Memory Extraction          |
 | Conflicts not detected       | Verify `resolve_memory_conflicts` tool exists in orchestrator tools |
 | Summarization not triggering | Add `should_summarize()` check in `get_active_agent()` function     |

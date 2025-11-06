@@ -12,7 +12,7 @@ The workshop follows a progressive learning path with the following Modules
 - [Module 3: Adding Memory to our Agents](Module-03.md)
 - [Module 4: Making Memory Intelligent](Module-04.md)
 - [Module 5: Observability & Experimentation](Module-05.md)
-- [Module 6: Lessons Learned, Agent Futures, Q&A](Module-06.md)
+- [Module 6: Lessons Learned, Agent and Memory Future, Q&A](Module-06.md)
 
 ## Clean up
 

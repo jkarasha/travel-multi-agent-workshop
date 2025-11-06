@@ -46,16 +46,16 @@ def initialize_cosmos_client():
         try:
             credential = DefaultAzureCredential()
             cosmos_client = CosmosClient(COSMOS_DB_URL, credential=credential)
-            logger.info(f"✅ Connected to Cosmos DB successfully using DefaultAzureCredential.")
+            logger.info(f"Connected to Cosmos DB successfully using DefaultAzureCredential.")
         except Exception as dac_error:
-            logger.error(f"❌ Failed to authenticate using DefaultAzureCredential: {dac_error}")
-            logger.warning("⚠️ Continuing without Cosmos DB client - some features may not work")
+            logger.error(f"Failed to authenticate using DefaultAzureCredential: {dac_error}")
+            logger.warning("Continuing without Cosmos DB client - some features may not work")
             return
 
         # Initialize database and containers
         try:
             database = cosmos_client.get_database_client(DATABASE_NAME)
-            logger.info(f"✅ Connected to database: {DATABASE_NAME}")
+            logger.info(f"Connected to database: {DATABASE_NAME}")
 
             # Initialize all containers (using PascalCase names to match Bicep)
             sessions_container = database.get_container_client("Sessions")
@@ -68,17 +68,17 @@ def initialize_cosmos_client():
             trips_container = database.get_container_client("Trips")
             users_container = database.get_container_client("Users")
             
-            logger.info("✅ All Cosmos DB containers initialized")
+            logger.info("All Cosmos DB containers initialized")
         except Exception as e:
-            logger.error(f"❌ Error initializing Cosmos DB containers: {e}")
-            logger.warning("⚠️ Continuing without containers - some features may not work")
+            logger.error(f"Error initializing Cosmos DB containers: {e}")
+            logger.warning("Continuing without containers - some features may not work")
 
 
 # Initialize on import
 try:
     initialize_cosmos_client()
 except Exception as e:
-    logger.warning(f"⚠️ Failed to initialize Cosmos DB client during import: {e}")
+    logger.warning(f"Failed to initialize Cosmos DB client during import: {e}")
 
 
 def is_cosmos_available():
@@ -167,17 +167,17 @@ def patch_active_agent(tenantId: str, userId: str, sessionId: str, activeAgent: 
             partition_key=pk,
             patch_operations=operations
         )
-        logger.info(f"✅ Patched active agent to '{activeAgent}' for session: {sessionId} (operation: {operation})")
+        logger.info(f"Patched active agent to '{activeAgent}' for session: {sessionId} (operation: {operation})")
     except Exception as e:
-        logger.error(f"❌ Error patching active agent for tenantId: {tenantId}, userId: {userId}, sessionId: {sessionId}: {e}")
+        logger.error(f"Error patching active agent for tenantId: {tenantId}, userId: {userId}, sessionId: {sessionId}: {e}")
         # Fallback: Try to update the whole document
         try:
             session_doc = sessions_container.read_item(item=sessionId, partition_key=pk)
             session_doc['activeAgent'] = activeAgent
             sessions_container.upsert_item(session_doc)
-            logger.info(f"✅ Updated active agent via upsert to '{activeAgent}' for session: {sessionId}")
+            logger.info(f"Updated active agent via upsert to '{activeAgent}' for session: {sessionId}")
         except Exception as fallback_error:
-            logger.error(f"❌ Fallback upsert also failed: {fallback_error}")
+            logger.error(f"Fallback upsert also failed: {fallback_error}")
             # Don't raise - this is not critical for operation
 
 
@@ -207,7 +207,7 @@ def create_session_record(user_id: str, tenant_id: str, activeAgent: str, title:
     }
     
     sessions_container.upsert_item(session)
-    logger.info(f"✅ Created session: {session_id}")
+    logger.info(f"Created session: {session_id}")
     return session
 
 
@@ -305,7 +305,7 @@ def append_message(
     messages_container.upsert_item(message)
     update_session_activity(session_id, tenant_id, user_id)
     
-    logger.info(f"✅ Appended message: {message_id} to session: {session_id}")
+    logger.info(f"Appended message: {message_id} to session: {session_id}")
     return message_id
 
 
@@ -505,7 +505,7 @@ def create_summary(
             except Exception as ex:
                 logger.error(f"Error marking message {msg_id} as superseded: {e}")
     
-    logger.info(f"✅ Created summary: {summary_id} (message: {message_id}) superseding {len(supersedes or [])} messages")
+    logger.info(f"Created summary: {summary_id} (message: {message_id}) superseding {len(supersedes or [])} messages")
     return summary_id
 
 
@@ -563,7 +563,7 @@ def get_user_summaries(
         enable_cross_partition_query=True
     ))
     
-    logger.info(f"✅ Retrieved {len(items)} summaries for user: {user_id}")
+    logger.info(f"Retrieved {len(items)} summaries for user: {user_id}")
     return items
 
 
@@ -619,7 +619,7 @@ def store_memory(
     }
     
     memories_container.upsert_item(memory)
-    logger.info(f"✅ Stored memory: {memory_id} (type: {memory_type}, salience: {salience})")
+    logger.info(f"Stored memory: {memory_id} (type: {memory_type}, salience: {salience})")
     return memory_id
 
 
@@ -645,9 +645,9 @@ def update_memory_last_used(
         
         # Upsert back
         memories_container.upsert_item(memory)
-        logger.debug(f"✅ Updated lastUsedAt for memory: {memory_id}")
+        logger.debug(f"Updated lastUsedAt for memory: {memory_id}")
     except Exception as e:
-        logger.error(f"❌ Failed to update memory lastUsedAt: {e}")
+        logger.error(f"Failed to update memory lastUsedAt: {e}")
 
 
 def supersede_memory(
@@ -685,10 +685,10 @@ def supersede_memory(
 
         # Upsert back
         memories_container.upsert_item(memory)
-        logger.info(f"✅ Memory {memory_id} superseded by {superseded_by}")
+        logger.info(f"Memory {memory_id} superseded by {superseded_by}")
         return True
     except Exception as e:
-        logger.error(f"❌ Failed to supersede memory {memory_id}: {e}")
+        logger.error(f"Failed to supersede memory {memory_id}: {e}")
         return False
 
 
@@ -731,7 +731,7 @@ def boost_memory_salience(
 
         # Upsert back
         memories_container.upsert_item(memory)
-        logger.info(f"✅ Boosted memory {memory_id} salience: {old_salience:.2f} → {new_salience:.2f}")
+        logger.info(f"Boosted memory {memory_id} salience: {old_salience:.2f} → {new_salience:.2f}")
 
         return {
             "success": True,
@@ -741,7 +741,7 @@ def boost_memory_salience(
             "boost": boost_amount
         }
     except Exception as e:
-        logger.error(f"❌ Failed to boost memory salience: {e}")
+        logger.error(f"Failed to boost memory salience: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -874,7 +874,7 @@ def query_places_hybrid(
     logger.info(f"     - price_tier: {price_tier}")
     
     if not places_container:
-        logger.error(f"❌ places_container is None! Cosmos DB not initialized properly.")
+        logger.error(f"places_container is None! Cosmos DB not initialized properly.")
         return []
     
     # Extract keywords from query for tags
@@ -945,10 +945,10 @@ def query_places_hybrid(
             parameters=params,
             enable_cross_partition_query=True
         ))
-        logger.info(f"✅ Returned {len(items)} items")
+        logger.info(f"Returned {len(items)} items")
         return items
     except Exception as ex:
-        logger.error(f"❌ Error in hybrid search: {ex}")
+        logger.error(f"Error in hybrid search: {ex}")
         import traceback
         logger.error(f"{traceback.format_exc()}")
         return []
@@ -978,7 +978,7 @@ def query_places_with_theme(
     Returns:
         List of places ranked by vector similarity with filters
     """
-    logger.info(f"🎨 ========== THEME VECTOR SEARCH (EXPLORE) ==========")
+    logger.info(f"========== THEME VECTOR SEARCH (EXPLORE) ==========")
     logger.info(f"     Theme: {theme}")
     logger.info(f"     City: {geo_scope_id}")
     
@@ -1073,10 +1073,10 @@ def query_places_with_theme(
             parameters=params,
             enable_cross_partition_query=True
         ))
-        logger.info(f"✅ Returned {len(items)} items")
+        logger.info(f"Returned {len(items)} items")
         return items
     except Exception as ex:
-        logger.error(f"❌ Error in theme search: {ex}")
+        logger.error(f"Error in theme search: {ex}")
         import traceback
         logger.error(f"{traceback.format_exc()}")
         return []
@@ -1103,7 +1103,7 @@ def query_places_filtered(
     Returns:
         List of places filtered and sorted by rating
     """
-    logger.info(f"🔍 ========== FILTERED SEARCH (EXPLORE) ==========")
+    logger.info(f"========== FILTERED SEARCH (EXPLORE) ==========")
     logger.info(f"     City: {geo_scope_id}")
     
     if not places_container:
@@ -1154,7 +1154,7 @@ def query_places_filtered(
     ORDER BY c.rating DESC
     """
     
-    logger.info(f"📝 Filtered Query: {query_sql[:200]}...")
+    logger.info(f"Filtered Query: {query_sql[:200]}...")
     
     try:
         items = list(places_container.query_items(
@@ -1162,13 +1162,13 @@ def query_places_filtered(
             parameters=params,
             enable_cross_partition_query=True
         ))
-        logger.info(f"✅ Returned {len(items)} items")
+        logger.info(f"Returned {len(items)} items")
         return items
     except Exception as ex:
-        logger.error(f"❌ Error querying places: {ex}")
-        logger.error(f"❌ Exception type: {type(ex).__name__}")
+        logger.error(f"Error querying places: {ex}")
+        logger.error(f"Exception type: {type(ex).__name__}")
         import traceback
-        logger.error(f"❌ Full traceback:\n{traceback.format_exc()}")
+        logger.error(f"Full traceback:\n{traceback.format_exc()}")
         raise ex
 
 
@@ -1211,7 +1211,7 @@ def create_trip(
     }
     
     trips_container.upsert_item(trip)
-    logger.info(f"✅ Created trip: {trip_id} with {trip_duration} days")
+    logger.info(f"Created trip: {trip_id} with {trip_duration} days")
     return trip_id
 
 
@@ -1276,7 +1276,7 @@ def create_user(
     }
     
     users_container.upsert_item(user)
-    logger.info(f"✅ Created user: {user_id} ({name})")
+    logger.info(f"Created user: {user_id} ({name})")
     return user_id
 
 
@@ -1298,7 +1298,7 @@ def get_all_users(tenant_id: str) -> List[Dict[str, Any]]:
             ],
             enable_cross_partition_query=True
         ))
-        logger.info(f"✅ Retrieved {len(items)} users for tenant: {tenant_id}")
+        logger.info(f"Retrieved {len(items)} users for tenant: {tenant_id}")
         return items
     except Exception as e:
         logger.error(f"Error getting users: {e}")
@@ -1325,10 +1325,10 @@ def get_user_by_id(user_id: str, tenant_id: str) -> Optional[Dict[str, Any]]:
             enable_cross_partition_query=True
         ))
         if items:
-            logger.info(f"✅ Retrieved user: {user_id}")
+            logger.info(f"Retrieved user: {user_id}")
             return items[0]
         else:
-            logger.warning(f"⚠️  User not found: {user_id}")
+            logger.warning(f" User not found: {user_id}")
             return None
     except Exception as e:
         logger.error(f"Error getting user: {e}")
@@ -1369,7 +1369,7 @@ def record_api_event(
     }
     
     api_events_container.upsert_item(event)
-    logger.info(f"✅ Recorded API event: {event_id} ({provider}.{operation})")
+    logger.info(f"Recorded API event: {event_id} ({provider}.{operation})")
     return event_id
 
 
@@ -1455,7 +1455,7 @@ def store_debug_log(
     }
     
     debug_logs_container.upsert_item(debug_entry)
-    logger.info(f"✅ Stored debug log: {debug_log_id} (agent: {agent_selected}, tokens: {total_tokens})")
+    logger.info(f"Stored debug log: {debug_log_id} (agent: {agent_selected}, tokens: {total_tokens})")
     return debug_log_id
 
 
@@ -1478,10 +1478,10 @@ def get_debug_log(debug_log_id: str, tenant_id: str, user_id: str, session_id: s
     try:
         partition_key = [tenant_id, user_id, session_id]
         item = debug_logs_container.read_item(item=debug_log_id, partition_key=partition_key)
-        logger.info(f"✅ Retrieved debug log: {debug_log_id}")
+        logger.info(f"Retrieved debug log: {debug_log_id}")
         return item
     except Exception as e:
-        logger.warning(f"⚠️ Debug log not found: {debug_log_id} - {e}")
+        logger.warning(f"Debug log not found: {debug_log_id} - {e}")
         return None
 
 
@@ -1527,7 +1527,7 @@ def query_debug_logs(
         enable_cross_partition_query=False
     ))
     
-    logger.info(f"✅ Retrieved {len(items)} debug logs for session {session_id}")
+    logger.info(f"Retrieved {len(items)} debug logs for session {session_id}")
     return items
 
 
@@ -1610,7 +1610,7 @@ def get_distinct_cities(tenant_id: str) -> List[Dict[str, str]]:
                 "displayName": display_name
             })
         
-        logger.info(f"✅ Retrieved {len(cities)} distinct cities")
+        logger.info(f"Retrieved {len(cities)} distinct cities")
         return cities
         
     except Exception as e:

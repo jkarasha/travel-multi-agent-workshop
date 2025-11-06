@@ -51,9 +51,9 @@ env_file = python_dir / '.env'
 
 if env_file.exists():
     load_dotenv(dotenv_path=env_file, override=False)
-    print(f"✅ Loaded .env from: {env_file}")
+    print(f"Loaded .env from: {env_file}")
 else:
-    print(f"⚠️  .env file not found at: {env_file}, trying default locations")
+    print(f".env file not found at: {env_file}, trying default locations")
     load_dotenv(override=False)
 
 from src.app.services.azure_open_ai import model, generate_embedding
@@ -284,7 +284,7 @@ async def initialize_agents():
     """Initialize agents with retry logic to handle MCP server startup timing"""
     global _agents_initialized, _graph, _checkpointer
 
-    logger.info("🚀 Starting agent initialization with retry logic...")
+    logger.info("Starting agent initialization with retry logic...")
 
     max_retries = 5
     retry_delay = 10  # seconds
@@ -296,23 +296,23 @@ async def initialize_agents():
             _graph = build_agent_graph()
             _checkpointer = get_checkpoint_saver()
             _agents_initialized = True
-            logger.info("✅ Agents initialized successfully!")
+            logger.info("Agents initialized successfully!")
             return
         except Exception as e:
-            logger.error(f"❌ Failed to initialize agents (attempt {attempt + 1}/{max_retries}): {e}")
-            logger.error(f"❌ Exception type: {type(e).__name__}")
-            logger.error(f"❌ Full traceback:")
+            logger.error(f"Failed to initialize agents (attempt {attempt + 1}/{max_retries}): {e}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            logger.error(f"Full traceback:")
             logger.error(traceback.format_exc())
 
             # If it's a TaskGroup exception, try to extract sub-exceptions
             if hasattr(e, '__cause__'):
-                logger.error(f"❌ Underlying cause: {e.__cause__}")
+                logger.error(f"Underlying cause: {e.__cause__}")
             if hasattr(e, '__context__'):
-                logger.error(f"❌ Exception context: {e.__context__}")
+                logger.error(f"Exception context: {e.__context__}")
 
             # ExceptionGroup (Python 3.11+) stores sub-exceptions in .exceptions attribute
             if hasattr(e, 'exceptions'):
-                logger.error(f"❌ TaskGroup contained {len(e.exceptions)} sub-exception(s):")
+                logger.error(f"TaskGroup contained {len(e.exceptions)} sub-exception(s):")
                 for idx, sub_exc in enumerate(e.exceptions, 1):
                     logger.error(f"\n   --- Sub-exception #{idx} ---")
                     logger.error(f"   Type: {type(sub_exc).__name__}")
@@ -326,15 +326,15 @@ async def initialize_agents():
                 logger.info(f"Retrying in {retry_delay} seconds...")
                 await asyncio.sleep(retry_delay)
             else:
-                logger.error("❌ All retry attempts failed. Service will start but agents won't be available.")
+                logger.error("All retry attempts failed. Service will start but agents won't be available.")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup resources on shutdown"""
-    logger.info("🛑 Shutting down Travel Assistant API...")
+    logger.info("Shutting down Travel Assistant API...")
     await cleanup_persistent_session()
-    logger.info("✅ Cleanup complete")
+    logger.info("Cleanup complete")
 
 
 async def ensure_agents_initialized():
@@ -342,16 +342,16 @@ async def ensure_agents_initialized():
     global _agents_initialized
 
     if not _agents_initialized:
-        logger.info("🔄 Initializing agents on demand...")
+        logger.info("Initializing agents on demand...")
         try:
             await setup_agents()
             global _graph, _checkpointer
             _graph = build_agent_graph()
             _checkpointer = get_checkpoint_saver()
             _agents_initialized = True
-            logger.info("✅ Agents initialized successfully!")
+            logger.info("Agents initialized successfully!")
         except Exception as e:
-            logger.error(f"❌ Failed to initialize agents: {e}")
+            logger.error(f"Failed to initialize agents: {e}")
             raise HTTPException(
                 status_code=503,
                 detail="MCP service unavailable. Please try again in a few moments."
@@ -742,10 +742,10 @@ def store_debug_log_from_response(sessionId: str, tenantId: str, userId: str, re
         )
 
         logger.info(
-            f"✅ Debug log stored: {debug_log_id} for session {sessionId} (agent: {agent_selected}, tokens: {total_tokens})")
+            f"Debug log stored: {debug_log_id} for session {sessionId} (agent: {agent_selected}, tokens: {total_tokens})")
         return debug_log_id
     except Exception as e:
-        logger.error(f"❌ Failed to store debug log: {e}")
+        logger.error(f"Failed to store debug log: {e}")
         # Return a placeholder ID if storage fails
         return str(uuid.uuid4())
 
@@ -881,7 +881,7 @@ def process_messages_background(message_tuples: List[tuple], userId: str, tenant
         # Update session activity
         update_session_activity(sessionId, tenantId, userId)
 
-        logger.info(f"✅ Stored {len(message_tuples)} messages for session {sessionId}")
+        logger.info(f"Stored {len(message_tuples)} messages for session {sessionId}")
     except Exception as e:
         logger.error(f"Error storing messages: {e}")
 
@@ -1397,7 +1397,7 @@ def filter_places(tenantId: str, filter_request: PlaceFilterRequest):
                 price_tier=filter_request.priceTiers
             )
 
-        logger.info(f"✅ Found {len(places)} places matching filters")
+        logger.info(f"Found {len(places)} places matching filters")
 
         return [Place(**place) for place in places]
     except Exception as e:
