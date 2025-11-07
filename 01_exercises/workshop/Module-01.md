@@ -923,10 +923,12 @@ Open a **first terminal window** and run the following commands:
 
 ```powershell
 cd 01_exercises
-venv\Scripts\activate.bat
+venv\Scripts\Activate.ps1
 cd mcp_server
 $env:PYTHONPATH="../python"; python mcp_http_server.py
 ```
+
+
 
 You should see output similar to:
 
@@ -1077,7 +1079,10 @@ Open a **new terminal window** (your third terminal - keep the MCP server runnin
 **Windows (PowerShell/CMD):**
 
 ```powershell
-cd 01_exercises; .\venv\Scripts\activate.bat; cd python; uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
+cd 01_exercises
+.\venv\Scripts\Activate.ps1
+cd python
+uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 You should see output similar to:
@@ -1118,14 +1123,21 @@ Open a fourth terminal window and execute:
 **macOS/Linux/WSL/Codespaces:**
 
 ```bash
-cd multi-agent-workshop/01_exercises/python
+cd 01_exercises/frontend
 npm install  # Only needed first time or when dependencies change
 npm start
 ```
 
 **Windows (PowerShell/CMD):**
-
 ```powershell
+cd 01_exercises\frontend
+npm install  # Only needed first time or when dependencies change
+npm start
+```
+
+You should see output similar to:
+
+```shell
 cd C:\multi-agent-workshop\01_exercises\python
 npm install  # Only needed first time or when dependencies change
 npm start

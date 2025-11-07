@@ -270,7 +270,7 @@ from src.app.services.azure_cosmos_db import (
 )
 ```
 
-Now, go to the end of the file, and paste the following code:
+Now, go to the end of the file (before Server Startup), and paste the following code:
 
 ```python
 # ============================================================================
@@ -1360,18 +1360,21 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 
 **In Terminal 1 (MCP Server):**
 
-1. Press `Ctrl + C` to stop the MCP server
-2. Restart it with:
+1. Close MCP server terminal
+2. Open new terminal and restart it with:
 
 ```bash
-python -m mcp_server.mcp_http_server
+cd 01_exercises
+venv\Scripts\Activate.ps1
+cd mcp_server
+$env:PYTHONPATH="../python"; python mcp_http_server.py
 ```
 
 **Backend API (Terminal 2)** - No action needed. Watchfiles will auto-reload changes.
 
 **Frontend (Terminal 3)** - No action needed. Angular dev server auto-reloads.
 
-Open your browser to http://localhost:4200 and start a new conversation:
+Open your browser to http://localhost:4200 (login as Tony or Steve) and start a new conversation:
 
 #### Test 1: Query User Preferences (Explicit Memory Recall)
 

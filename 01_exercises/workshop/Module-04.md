@@ -2083,21 +2083,25 @@ Since we've added new tools and agent logic, restart all services to load the ch
 **Terminal 1 (MCP Server):**
 
 ```shell
+cd 01_exercises
+venv\Scripts\Activate.ps1
 cd mcp_server
-python -m mcp_http_server
+$env:PYTHONPATH="../python"; python mcp_http_server.py
 ```
 
 **Terminal 2 (Backend API):**
 
 ```shell
-cd multi-agent-workshop/01_exercises/python
+cd 01_exercises
+.\venv\Scripts\Activate.ps1
+cd python
 uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 3 (Frontend):**
 
 ```shell
-cd multi-agent-workshop/01_exercises/python
+cd 01_exercises/frontend
 npm start
 ```
 
@@ -2107,7 +2111,7 @@ npm start
 
 **Steps**:
 
-1. Start a new conversation in the frontend
+1. Start a new conversation in the frontend (be sure to sign in as user "Tony")
 2. Send: "Hi, I'm planning a trip to Tokyo"
 3. Send: "I don't eat meat and I need wheelchair-accessible restaurants"
 4. Open Azure Data Explorer (Cosmos DB)
@@ -2158,7 +2162,7 @@ npm start
 
 **Steps:**
 
-- Start a new conversation
+- Start a new conversation (log out and back in as Tony)
 - Send: "I'm vegan"
 - Wait for memory to be stored
 - Send: "I'm also gluten-free"
@@ -2221,7 +2225,7 @@ npm start
 
 **Steps:**
 
-- Start a new conversation
+- Start a new conversation (log out and back in as Tony)
 - Send: "Hello!"
 - Send: "Yes"
 - Send: "Thanks"
