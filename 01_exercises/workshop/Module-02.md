@@ -1406,7 +1406,7 @@ With the activities in this module complete, it is time to test your work!
 
 Since we added new tools to the MCP server, we need to restart it to load the changes. The backend API and frontend will automatically reload thanks to watchfiles.
 
-**In Terminal 1 with MCP Server:**
+**In Terminal with MCP Server:**
 
 1. Press `Ctrl + C` to stop the MCP server
 2. Restart it with:
@@ -1415,9 +1415,9 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 $env:PYTHONPATH="../python"; python mcp_http_server.py
 ```
 
-**Backend API (Terminal 2)** - No action needed. Watchfiles will auto-reload changes.
+**Backend API Terminal** - No action needed. Watchfiles will auto-reload changes.
 
-**Frontend (Terminal 3)** - No action needed. Angular dev server auto-reloads.
+**Frontend Terminal** - No action needed. Angular dev server auto-reloads.
 
 Open your browser to http://localhost:4200 and start a new conversation (you may need to log out and log back in to reset the session):
 
