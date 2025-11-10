@@ -995,8 +995,8 @@ INFO:httpx:HTTP Request: POST http://localhost:8080/mcp/ "HTTP/1.1 200 OK"
 INFO:__main__:[DEBUG] All tools registered from Travel Assistant MCP server:
 INFO:__main__:  - transfer_to_orchestrator
 INFO:__main__:  - transfer_to_itinerary_generator
-INFO:__main__:Loading prompt for orchestrator from /Users/aayushkataria/git/travel-multi-agent-workshop/01_exercises/python/src/app/prompts/orchestrator.prompty
-INFO:__main__:Loading prompt for itinerary_generator from /Users/aayushkataria/git/travel-multi-agent-workshop/01_exercises/python/src/app/prompts/itinerary_generator.prompty
+INFO:__main__:Loading prompt for orchestrator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/orchestrator.prompty
+INFO:__main__:Loading prompt for itinerary_generator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/itinerary_generator.prompty
 
 ======================================================================
 🌍 Travel Assistant - Interactive Test Mode
@@ -1088,7 +1088,7 @@ uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 You should see output similar to:
 
 ```shell
-✅ Loaded .env from: /Users/aayushkataria/git/travel-multi-agent-workshop/01_exercises/python/.env
+✅ Loaded .env from: /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/.env
 INFO:     Started server process [98100]
 INFO:     Waiting for application startup.
 INFO:src.app.travel_agents_api:🚀 Starting agent initialization with retry logic...
@@ -1107,8 +1107,8 @@ INFO:src.app.travel_agents:✅ MCP Client initialized successfully
 INFO:src.app.travel_agents:[DEBUG] All tools registered from Travel Assistant MCP server:
 INFO:src.app.travel_agents:  - transfer_to_orchestrator
 INFO:src.app.travel_agents:  - transfer_to_itinerary_generator
-INFO:src.app.travel_agents:Loading prompt for orchestrator from /Users/aayushkataria/git/travel-multi-agent-workshop/01_exercises/python/src/app/prompts/orchestrator.prompty
-INFO:src.app.travel_agents:Loading prompt for itinerary_generator from /Users/aayushkataria/git/travel-multi-agent-workshop/01_exercises/python/src/app/prompts/itinerary_generator.prompty
+INFO:src.app.travel_agents:Loading prompt for orchestrator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/orchestrator.prompty
+INFO:src.app.travel_agents:Loading prompt for itinerary_generator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/itinerary_generator.prompty
 INFO:src.app.travel_agents:🏗️  Building multi-agent graph...
 INFO:src.app.travel_agents_api:✅ Agents initialized successfully!
 INFO:     Application startup complete.

@@ -29,7 +29,7 @@ Welcome to the Travel Assistant Multi-Agent Workshop! In this module, you'll set
 
 ### Step 1: Navigate to the Workshop Directory
 
-Open PowerShell and navigate to the workshop `\travel-multi-agent-workshop\01_exercises` directory.
+Open PowerShell and navigate to the workshop `\multi-agent-workshop\01_exercises` directory.
 
 ### Step 2: Activate the Virtual Environment
 
