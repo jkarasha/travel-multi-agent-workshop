@@ -1070,7 +1070,6 @@ builder.add_conditional_edges(
         "summarizer": "summarizer",  # Can stay in summarizer
     }
 )
-)
 ```
 
 #### Understanding the Workflow
@@ -2078,7 +2077,7 @@ With all intelligent memory features implemented, it's time to test the system e
 
 ### Restart All Services
 
-Since we've added new tools and agent logic, restart all services to load the changes.
+Since we've added new tools and agent logic, close all your existing terminal windows and open new ones to restart all services and load the changes.
 
 **Terminal 1 (MCP Server):**
 
