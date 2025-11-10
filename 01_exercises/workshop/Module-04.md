@@ -2083,7 +2083,7 @@ Since we've added new tools and agent logic, restart all services to load the ch
 **Terminal 1 (MCP Server):**
 
 ```shell
-cd 01_exercises
+cd multi-agent-workshop\01_exercises
 venv\Scripts\Activate.ps1
 cd mcp_server
 $env:PYTHONPATH="../python"; python mcp_http_server.py
@@ -2092,7 +2092,7 @@ $env:PYTHONPATH="../python"; python mcp_http_server.py
 **Terminal 2 (Backend API):**
 
 ```shell
-cd 01_exercises
+cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
 cd python
 uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
@@ -2101,7 +2101,7 @@ uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 **Terminal 3 (Frontend):**
 
 ```shell
-cd 01_exercises/frontend
+cd multi-agent-workshop\01_exercises/frontend
 npm start
 ```
 

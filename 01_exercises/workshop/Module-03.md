@@ -1364,7 +1364,7 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 2. Open new terminal and restart it with:
 
 ```bash
-cd 01_exercises
+cd multi-agent-workshop\01_exercises
 venv\Scripts\Activate.ps1
 cd mcp_server
 $env:PYTHONPATH="../python"; python mcp_http_server.py

@@ -922,7 +922,7 @@ Open a **first terminal window** and run the following commands:
 **Windows(PowerShell/CMD):**
 
 ```powershell
-cd 01_exercises
+cd multi-agent-workshop\01_exercises
 venv\Scripts\Activate.ps1
 cd mcp_server
 $env:PYTHONPATH="../python"; python mcp_http_server.py
@@ -937,77 +937,22 @@ You should see output similar to:
    Simple Token: SET
    Base URL: http://localhost:8080
 ✅ SIMPLE TOKEN MODE ENABLED (Development)
-   Token: banking-...
+   Token: travel-s...
 
 🚀 Initializing Travel Assistant MCP Server...
 ✅ Travel Assistant MCP server initialized
 🌐 Server will be available at: http://0.0.0.0:8080
 📋 Authentication mode: SIMPLE_TOKEN
 
-Starting Banking Tools MCP server...
-� Starting server without built-in authentication...
+Starting Travel Assistant MCP server...
+🔓 Starting server without built-in authentication...
 💡 For OAuth, use a reverse proxy like nginx or API gateway
-INFO:     Started server process [62235]
+INFO:     Started server process [6504]
 INFO:     Waiting for application startup.
-INFO:mcp.server.streamable_http_manager:StreamableHTTP session manager started
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 ```
 
-#### Step 2: Start the Travel Agents Application
-
-Open a second terminal window (keep the first one running) and run the following commands:
-
-**Windows(PowerShell/CMD):**
-
-```powershell
-cd 01_exercises
-.\venv\Scripts\activate.bat
-cd python
-python -m src.app.travel_agents
-```
-
-You should see output indicating the agents are initializing, where you can input text after "you":
-
-```shell
-INFO:azure.identity._credentials.environment:No environment configuration found.
-INFO:azure.identity._credentials.managed_identity:ManagedIdentityCredential will use IMDS
-INFO:src.app.services.azure_open_ai:✅ Azure OpenAI initialized
-INFO:src.app.services.azure_open_ai:   Endpoint: https://akata-mgv8y7vj-eastus2.cognitiveservices.azure.com/
-INFO:src.app.services.azure_open_ai:   Chat Model: gpt-4.1-mini
-INFO:src.app.services.azure_open_ai:   Embedding Model: text-embedding-3-small
-INFO:__main__:🚀 Starting Travel Assistant MCP client...
-INFO:__main__:🔐 Client Authentication Configuration:
-INFO:__main__:   Simple Token: SET
-INFO:__main__:   Mode: Simple Token (Development)
-INFO:__main__:   - Transport: streamable_http
-INFO:__main__:   - Server URL: http://localhost:8080/mcp/
-INFO:__main__:   - Authentication: SIMPLE_TOKEN
-INFO:__main__:   - Status: Ready to connect
-
-INFO:__main__:🔐 Added Bearer token authentication to client
-INFO:__main__:✅ MCP Client initialized successfully
-INFO:httpx:HTTP Request: POST http://localhost:8080/mcp/ "HTTP/1.1 200 OK"
-INFO:mcp.client.streamable_http:Received session ID: 7adc8f6212be474aab5f67cba1ad6821
-INFO:httpx:HTTP Request: POST http://localhost:8080/mcp/ "HTTP/1.1 202 Accepted"
-INFO:httpx:HTTP Request: GET http://localhost:8080/mcp/ "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST http://localhost:8080/mcp/ "HTTP/1.1 200 OK"
-INFO:__main__:[DEBUG] All tools registered from Travel Assistant MCP server:
-INFO:__main__:  - transfer_to_orchestrator
-INFO:__main__:  - transfer_to_itinerary_generator
-INFO:__main__:Loading prompt for orchestrator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/orchestrator.prompty
-INFO:__main__:Loading prompt for itinerary_generator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/itinerary_generator.prompty
-
-======================================================================
-🌍 Travel Assistant - Interactive Test Mode
-======================================================================
-Type 'exit' to end the conversation
-======================================================================
-
-INFO:__main__:🏗️  Building multi-agent graph...
-You:
-
-```
 
 ### Wiring up the API layer
 
@@ -1063,23 +1008,21 @@ async def get_chat_completion(
     ]
 ```
 
-Now, stop travel agents windows you have running, but keep the MCP server running.
-
 You need to have **three components** running simultaneously:
 
 1. **MCP Server** (should already be running from previous steps)
-2. **Backend API** (we'll start this now)
+2. **Backend API** (should still be running from module 00, but if not, we'll restart it)
 3. **Frontend** (we'll start this next)
 
 #### Start the Backend API Server
 
-Open a **new terminal window** (your third terminal - keep the MCP server running) and execute:
+The backend API server should still be running from when you started in a terminal in module 00. You also started it with `--reload`, so it should automatically restart on code changes (you should see warnings like "WatchFiles detected changes"). Check it is still running. If it's not running, or you prefer to restart a fresh instance, open a **new terminal window** (keep the MCP server running) and execute:
 
 
 **Windows (PowerShell/CMD):**
 
 ```powershell
-cd 01_exercises
+cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
 cd python
 uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
@@ -1118,27 +1061,12 @@ The API server is now running on http://localhost:8000
 
  #### Start the Frontend Application
 
-Open a fourth terminal window and execute:
+Your frontend should be already be started from module 00. If you closed it, open a new terminal window and execute:
 
-**macOS/Linux/WSL/Codespaces:**
-
-```bash
-cd 01_exercises/frontend
-npm install  # Only needed first time or when dependencies change
-npm start
-```
 
 **Windows (PowerShell/CMD):**
 ```powershell
-cd 01_exercises\frontend
-npm install  # Only needed first time or when dependencies change
-npm start
-```
-
-You should see output similar to:
-
-```shell
-cd C:\multi-agent-workshop\01_exercises\python
+cd multi-agent-workshop\01_exercises\frontend
 npm install  # Only needed first time or when dependencies change
 npm start
 ```
@@ -1165,9 +1093,8 @@ You should now have **four terminals** with these processes:
 | Terminal | Component   | Port | Command                                     |
 |----------|-------------|------|---------------------------------------------|
 | 1        | MCP Server  | 8080 | `python mcp_server/mcp_http_server.py`      |
-| 2        | (Optional)  | -    | Interactive CLI test (can be closed)        |
-| 3        | Backend API | 8000 | `uvicorn src.app.travel_agents_api:app ...` |
-| 4        | Frontend    | 4200 | `npm start`                                 |
+| 2        | Backend API | 8000 | `uvicorn src.app.travel_agents_api:app ...` |
+| 3        | Frontend    | 4200 | `npm start`                                 |
 
 
 ### Start a Conversation
