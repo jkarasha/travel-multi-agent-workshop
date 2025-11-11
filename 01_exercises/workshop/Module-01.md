@@ -248,13 +248,13 @@ async def setup_agents():
     global itinerary_generator_agent
     global _mcp_client, _session_context, _persistent_session
 
-    logger.info("Starting Travel Assistant MCP client...")
+    logger.info("🚀 Starting Travel Assistant MCP client...")
 
     # Load authentication configuration
     try:
         simple_token = os.getenv("MCP_AUTH_TOKEN")
 
-        logger.info("Client Authentication Configuration:")
+        logger.info("🔐 Client Authentication Configuration:")
         logger.info(f"   Simple Token: {'SET' if simple_token else 'NOT SET'}")
 
         # Determine authentication mode
@@ -267,7 +267,7 @@ async def setup_agents():
 
     except ImportError:
         simple_token = None
-        logger.info("Client Authentication: Dependencies unavailable - no auth")
+        logger.info("🔐 Client Authentication: Dependencies unavailable - no auth")
 
     logger.info("   - Transport: streamable_http")
     logger.info(f"   - Server URL: {os.getenv('MCP_SERVER_BASE_URL', 'http://localhost:8080')}/mcp/")
@@ -286,10 +286,10 @@ async def setup_agents():
     client_config["travel_tools"]["headers"] = {
         "Authorization": f"Bearer {simple_token}"
     }
-    logger.info("Added Bearer token authentication to client")
+    logger.info("🔐 Added Bearer token authentication to client")
 
     _mcp_client = MultiServerMCPClient(client_config)
-    logger.info("MCP Client initialized successfully")
+    logger.info("✅ MCP Client initialized successfully")
 
     # Create persistent session
     _session_context = _mcp_client.session("travel_tools")
@@ -375,12 +375,12 @@ async def cleanup_persistent_session():
     if _session_context is not None and _persistent_session is not None:
         try:
             await _session_context.__aexit__(None, None, None)
-            logger.info("MCP persistent session cleaned up successfully")
+            logger.info("✅ MCP persistent session cleaned up successfully")
         except Exception as e:
             logger.error(f"Error cleaning up MCP session: {e}")
 
 def build_agent_graph():
-    logger.info("Building multi-agent graph...")
+    logger.info("🏗️  Building multi-agent graph...")
 
     builder = StateGraph(MessagesState)
     builder.add_node("orchestrator", call_orchestrator_agent)

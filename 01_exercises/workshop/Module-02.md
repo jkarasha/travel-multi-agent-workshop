@@ -604,14 +604,14 @@ def discover_places(
             accessibility=accessibility,
             price_tier=price_tier
         )
-        logger.info(f"Hybrid RRF returned {len(places)} results")
+        logger.info(f"✅ Hybrid RRF returned {len(places)} results")
     except Exception as e:
-        logger.error(f"Error in hybrid search: {e}")
+        logger.error(f"❌ Error in hybrid search: {e}")
         import traceback
         logger.error(f"{traceback.format_exc()}")
         return []
 
-    logger.info(f"Returning {len(places)} places with memory alignment")
+    logger.info(f"✅ Returning {len(places)} places with memory alignment")
     return places
 ```
 
@@ -651,7 +651,7 @@ def create_new_trip(
     Returns:
         Dictionary with tripId and details
     """
-    logger.info(f"Creating trip for user: {user_id} with {len(days or [])} days")
+    logger.info(f"🎒 Creating trip for user: {user_id} with {len(days or [])} days")
 
     trip_id = create_trip(
         user_id=user_id,
@@ -690,7 +690,7 @@ def get_trip_details(
     Returns:
         Trip dictionary or None if not found
     """
-    logger.info(f"Getting trip: {trip_id}")
+    logger.info(f"📋 Getting trip: {trip_id}")
     return get_trip(trip_id, user_id, tenant_id)
 
 
@@ -713,7 +713,7 @@ def update_trip(
     Returns:
         Updated trip dictionary
     """
-    logger.info(f"Updating trip: {trip_id}")
+    logger.info(f"📝 Updating trip: {trip_id}")
 
     # Get existing trip
     trip = get_trip(trip_id, user_id, tenant_id)
@@ -758,7 +758,7 @@ def create_session(
     Returns:
         Dictionary with session details including sessionId
     """
-    logger.info(f"Creating session for user: {user_id}")
+    logger.info(f"🆕 Creating session for user: {user_id}")
     session = create_session_record(user_id, tenant_id, activeAgent, title)
     return {
         "sessionId": session["sessionId"],
@@ -787,7 +787,7 @@ def get_session_context(
     Returns:
         Dictionary with messages, summaries, and metadata
     """
-    logger.info(f"Getting context for session: {session_id}")
+    logger.info(f"📖 Getting context for session: {session_id}")
 
     messages = get_session_messages(session_id, tenant_id, user_id)
     session_info = get_session_by_id(session_id, tenant_id, user_id)
