@@ -179,15 +179,15 @@ Users feel understood when agents:
 
 ### Create tool in the mcp server
 
-Navigate to this file `mcp_server/mcp_http_server.py`.
+Navigate to this file **mcp_server/mcp_http_server.py**
 
-Locate this import line `from src.app.services.azure_cosmos_db import`, and add the following import above it.
+Locate this import line **from src.app.services.azure_cosmos_db import**, and add the following import above it.
 
 ```python
 from src.app.services.azure_open_ai import get_openai_client
 ```
 
-Locate the `def recall_memories` tool, and add the following tool after it.
+Locate the **def recall_memories** tool, and add the following tool after it.
 
 ````python
 @mcp.tool()
@@ -306,9 +306,9 @@ def call_llm_with_prompt(template: str, variables: Dict[str, Any], temperature: 
 
 ### Adding tool to Orchestrator Agent
 
-Navigate to the file `src/app/travel_agents.py`.
+Navigate to the file **src/app/travel_agents.py**.
 
-Locate `orchestrator_tools`, and update the tools with the code below.
+Locate **orchestrator_tools**, and update the tools with the code below.
 
 ```python
 orchestrator_tools = filter_tools_by_prefix(all_tools, [
@@ -349,7 +349,7 @@ orchestrator_tools = filter_tools_by_prefix(all_tools, [
 
 ### Create tools in the mcp server
 
-Navigate to this file `mcp_server/mcp_http_server.py`.
+Navigate to this file **mcp_server/mcp_http_server.py**
 
 We need to first update the following imports.
 
@@ -391,7 +391,7 @@ from src.app.services.azure_cosmos_db import (
 )
 ```
 
-Locate the `def extract_preferences_from_message` tool, and add the following tools after it.
+Locate the **def extract_preferences_from_message** tool, and add the following tools after it.
 
 ```python
 @mcp.tool()
@@ -635,9 +635,9 @@ def store_resolved_preferences(
 
 ### Adding tool to Orchestrator Agent
 
-Navigate to the file `src/app/travel_agents.py`.
+Navigate to the file **src/app/travel_agents.py**
 
-Locate `orchestrator_tools`, and update the tools with the code below.
+Locate **orchestrator_tools**, and update the tools with the code below.
 
 ```python
 orchestrator_tools = filter_tools_by_prefix(all_tools, [
@@ -682,9 +682,9 @@ Auto-summarization solves these by compressing older messages into concise summa
 
 ### Create tools in the MCP server
 
-Navigate to the file `mcp_server/mcp_http_server`.
+Navigate to the file **mcp_server/mcp_http_server**
 
-Locate `def store_resolved_preferences` tool, and add the following tools after it.
+Locate **def store_resolved_preferences** tool, and add the following tools after it.
 
 ```python
 # ============================================================================
@@ -853,7 +853,7 @@ def get_all_user_summaries(
 
 ### Adding Auto-Trigger Logic
 
-Navigate to the file `src/app/travel_agents.py`.
+Navigate to the file **src/app/travel_agents.py**
 
 #### Step 1: Update imports
 
@@ -871,7 +871,7 @@ from src.app.services.azure_cosmos_db import count_active_messages, DATABASE_NAM
 
 #### Step 2: Add Summarization Check Function
 
-Locate the `human_node` function. After it, add the following function:
+Locate the **human_node** function. After it, add the following function:
 
 ```python
 def should_summarize(state: MessagesState, config) -> bool:
@@ -904,7 +904,7 @@ def should_summarize(state: MessagesState, config) -> bool:
 
 #### Step 3: Update the Router to Check for Summarization
 
-Locate the `get_active_agent` function, and search for `activeAgent = None`. Add the following code above it.
+Locate the **get_active_agent** function, and search for **activeAgent = None**. Add the following code above it.
 
 ```python
 # **CHECK FOR AUTO-SUMMARIZATION FIRST**
@@ -938,7 +938,7 @@ itinerary_generator_agent = None
 summarizer_agent = None
 ```
 
-Update the global variables in the `setup_agents()` function.
+Update the global variables in the **setup_agents()** function.
 
 ```python
 global orchestrator_agent, hotel_agent, activity_agent, dining_agent
@@ -954,7 +954,7 @@ global itinerary_generator_agent, summarizer_agent
 
 #### Step 5: Add summarizer tools
 
-In `setup_agent()` function, after the `dining_tools`, add:
+In **setup_agent()** function, after the **dining_tools**, add:
 
 ```python
 summarizer_tools = filter_tools_by_prefix(all_tools, [
@@ -966,7 +966,7 @@ summarizer_tools = filter_tools_by_prefix(all_tools, [
 
 #### Step 6: Create Summarizer Agent
 
-Locate `dining_agent = create_react_agent`, add the following code after it:
+Locate **dining_agent = create_react_agent**, add the following code after it:
 
 ```python
 summarizer_agent = create_react_agent(
@@ -978,7 +978,7 @@ summarizer_agent = create_react_agent(
 
 #### Step 7: Add Summarizer Agent Node
 
-Create the summarizer agent node function. Add this after the `call_dining_agent` function:
+Create the summarizer agent node function. Add this after the **call_dining_agent** function:
 
 ```python
 async def call_summarizer_agent(state: MessagesState, config) -> Command[
@@ -1008,7 +1008,7 @@ async def call_summarizer_agent(state: MessagesState, config) -> Command[
 
 #### Step 8: Update the Graph Builder
 
-In the `build_agent_graph()` function, add the summarizer node. It should look like this:
+In the **build_agent_graph()** function, add the summarizer node. It should look like this:
 
 ```python
 builder = StateGraph(MessagesState)
@@ -1076,14 +1076,14 @@ builder.add_conditional_edges(
 
 When a user continues a conversation past 10 messages:
 
-1. **Detection**: `should_summarize()` checks message count after each turn
+1. **Detection**: **should_summarize()** checks message count after each turn
 2. **Auto-Trigger**: Router returns "summarizer" instead of normal agent
 3. **Summarizer Agent**:
-   - Calls `get_summarizable_span()` to identify messages 1-5 (keeps 6-10)
-   - Calls `recall_memories()` to extract key preferences from conversation
-   - Calls `get_session_context()` to retrieve full message history
+   - Calls **get_summarizable_span()** to identify messages 1-5 (keeps 6-10)
+   - Calls **recall_memories()** to extract key preferences from conversation
+   - Calls **get_session_context()** to retrieve full message history
    - Generates structured summary preserving critical information
-   - Calls `mark_span_summarized()` to create summary and mark old messages
+   - Calls **mark_span_summarized()** to create summary and mark old messages
 4. Resume: Transfers back to orchestrator to continue normal conversation
 
 #### Why Every 10 Messages?
@@ -1108,13 +1108,13 @@ When a user continues a conversation past 10 messages:
 
 ### Updating Agent Prompts
 
-Now that we've added intelligent memory extraction handled by the Orchestrator, we need to update the Orchestrator prompt to use these new tools. The specialist agents (Hotel, Activity, Dining) from Module 03 don't need changes since they already use `recall_memories` correctly.
+Now that we've added intelligent memory extraction handled by the Orchestrator, we need to update the Orchestrator prompt to use these new tools. The specialist agents (Hotel, Activity, Dining) from Module 03 don't need changes since they already use **recall_memories** correctly.
 
-Navigate to `src/app/prompts/` folder.
+Navigate to **src/app/prompts/** folder.
 
 #### Update Orchestrator Prompt
 
-Open `orchestrator.prompty` and **replace the entire contents** with:
+Open **orchestrator.prompty** and **replace the entire contents** with:
 
 ```text
 ---
@@ -1314,7 +1314,7 @@ User: "What are my hotel preferences?"
 
 #### Add the Summarizer Agent Prompt
 
-Next, locate and open the empty `summarizer.prompty` file.
+Next, locate and open the empty **summarizer.prompty** file.
 
 Copy and paste the following text into it:
 
@@ -1810,7 +1810,7 @@ Your goal: Compress conversation history efficiently while preserving all import
 
 #### Add the Memory Conflict and Resolution Prompt
 
-Next, locate and open the empty `memory_conflict_resolution.prompty` file.
+Next, locate and open the empty **memory_conflict_resolution.prompty** file.
 
 Copy and paste the following text into it:
 
@@ -1946,7 +1946,7 @@ Analyze and respond with JSON only. Check for duplicates FIRST before analyzing 
 
 #### Add the Preference Extraction Prompt
 
-Next, locate and open the empty `preference_extraction.prompty` file.
+Next, locate and open the empty **preference_extraction.prompty** file.
 
 Copy and paste the following text into it:
 
@@ -2081,7 +2081,7 @@ Since we've added new tools and agent logic, we need to restart all services to 
 
 **Terminal 1 (MCP Server):**
 
-Stop the currently running MCP server (press `Ctrl+C`), then restart it:
+Stop the currently running MCP server (press **Ctrl+C**), then restart it:
 
 > **Important**: Always ensure your virtual environment is activated!
 
@@ -2105,7 +2105,7 @@ $env:PYTHONPATH="..\python"; python mcp_http_server.py
 
 **Terminal 2 (Backend API):**
 
-Stop the currently running backend (press `Ctrl+C`), then restart it:
+Stop the currently running backend (press **Ctrl+C**), then restart it:
 
 **Linux/Mac/WSL/Codespaces:**
 
@@ -2127,7 +2127,7 @@ uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 
 **Terminal 3 (Frontend):**
 
-Stop the currently running frontend (press `Ctrl+C`), then restart it:
+Stop the currently running frontend (press **Ctrl+C**), then restart it:
 
 > **Note**: The frontend doesn't require virtual environment activation since it uses Node.js.
 

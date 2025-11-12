@@ -17,19 +17,40 @@ Welcome to the Travel Assistant Multi-Agent Workshop! In this module, you'll set
 
 ## Module Exercises
 
-1. [Activity 1: Set Up Your Development Environment](#activity-1-set-up-your-development-environment)
-2. [Activity 2: Seed the Database](#activity-2-seed-the-database)
+1. [Activity 1: Verify the resources in Azure Portal](#activity-1-verify-the-resources-in-azure-portal)
+2. [Activity 2: Set Up Your Development Environment](#activity-2-set-up-your-development-environment)
 3. [Activity 3: Start the API Server](#activity-3-start-the-api-server)
 4. [Activity 4: Launch the Frontend](#activity-4-launch-the-frontend)
 5. [Activity 5: Verify Your Setup](#activity-5-verify-your-setup)
 
 ---
 
-## Activity 1: Set Up Your Development Environment
+## Activity 1: Verify the resources in Azure Portal
+
+Verify the resources are correctly deployed in the Azure Portal
+
+- Open a browser locally on the VM and navigate to +++https://portal.azure.com+++ 
+- Login using the credentials below 
+- User name +++@lab.CloudPortalCredential(User1).Username+++ 
+- Temporary Access Pass +++@lab.CloudPortalCredential(User1).AccessToken+++ 
+- In the Search box at the top of the Azure Portal, type in resource group. Open the Resource groups blade 
+- Open the resource group that starts with: rg-agentworkshop-. 
+- If the resource group does not appear wait a few moments then refresh. 
+- When the new resource group appears, expand the Overview tab and click deployments.
+
+![Testing_1](./media/Module-00/Test-1.png)
+
+- If all resources have been deployed successfully, you are ready to begin the lab. Your screen should look like this.
+
+![Testing 2](./media/Module-00/Test-2.png)
+
+- Leave this browser open to the Azure Portal.
+
+## Activity 2: Set Up Your Development Environment
 
 ### Step 1: Navigate to the Workshop Directory
 
-Open PowerShell and navigate to the workshop `\multi-agent-workshop\01_exercises` directory:
+Open PowerShell and navigate to the workshop **\multi-agent-workshop\01_exercises** directory:
 
 ```powershell
 cd multi-agent-workshop\01_exercises
@@ -43,7 +64,7 @@ Activate the virtual environment using PowerShell:
 .\venv\Scripts\Activate.ps1
 ```
 
-You should see `(venv)` appear in your terminal prompt, indicating the virtual environment is active.
+You should see **(venv)** appear in your terminal prompt, indicating the virtual environment is active.
 
 > **Note:** If you encounter an execution policy error, run PowerShell as Administrator and execute:
 >
@@ -51,7 +72,7 @@ You should see `(venv)` appear in your terminal prompt, indicating the virtual e
 > Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 > ```
 
-## Activity 2: Start the API Server
+## Activity 3: Start the API Server
 
 Let's start the backend API server.
 
@@ -89,9 +110,8 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ### Verify the API
 
 Open your browser and navigate to:
-
-- **API Documentation**: `http://localhost:8000/docs`
-- **Health Check**: `http://localhost:8000/health`
+- **API Documentation**: **http://localhost:8000/docs**
+- **Health Check**: **http://localhost:8000/health**
 
 You should see the FastAPI Swagger UI with all available endpoints.
 
@@ -161,7 +181,7 @@ Build at: 2025-11-05T12:00:00.000Z - Hash: xxxxx
 
 Open your browser and navigate to:
 
-`http://localhost:4200`
+**http://localhost:4200**
 
 ---
 
@@ -173,7 +193,7 @@ Now that everything is running, let's verify the setup is correct.
 
 Let's check that data was loaded correctly in Cosmos DB.
 
-1. **Open the Azure Portal**: https://portal.azure.com
+1. **Open the Azure Portal**: **https://portal.azure.com**
 2. **Navigate to your Cosmos DB account**
 3. **Go to Data Explorer**
 
@@ -181,17 +201,17 @@ Check the following containers:
 
 #### Users Container
 
-- **Container**: `Users`
+- **Container**: **Users**
 - **Expected**: 4 user documents
 - **Check for users**:
-  - Tony Stark (`tony`)
-  - Steve Rogers (`steve`)
-  - Peter Parker (`peter`)
-  - Bruce Banner (`bruce`)
+  - Tony Stark (**tony**)
+  - Steve Rogers (**steve**)
+  - Peter Parker (**peter**)
+  - Bruce Banner (**bruce**)
 
 #### Places Container
 
-- **Container**: `Places`
+- **Container**: **Places**
 - **Expected**: ~2,900 place documents
 - **Categories**: Hotels, Restaurants, Activities
 - **Sample cities**: Seattle, Tokyo, Paris, London, New York, etc.
@@ -214,7 +234,7 @@ Example place document structure:
 
 #### Memories Container
 
-- **Container**: `Memories`
+- **Container**: **Memories**
 - **Expected**: 10 pre-existing memory documents
 - **Users with memories**:
   - Tony Stark (5 memories)
@@ -283,7 +303,7 @@ Your setup is successful if you can verify:
 
 ✅ **Python virtual environment created** and activated  
 ✅ **Dependencies installed** without errors  
-✅ **Environment variables configured** in `.env` file  
+✅ **Environment variables configured** in **.env** file  
 ✅ **Database seeded successfully**:
 
 - 4 users in the Users container
@@ -324,9 +344,9 @@ pip install -r requirements.txt
 
 ### Issue: Seed Script Fails with Authentication Error
 
-**Solution**: The `.env` file should already be configured. If you encounter authentication errors:
+**Solution**: The **.env** file should already be configured. If you encounter authentication errors:
 
-- Verify `COSMOSDB_ENDPOINT` and `COSMOS_KEY` in `python\.env`
+- Verify **COSMOSDB_ENDPOINT** and **COSMOS_KEY** in **python\.env**
 - Ensure the values match your Azure Cosmos DB account
 - Contact the workshop instructor if credentials are incorrect
 
@@ -345,7 +365,7 @@ pip install -r requirements.txt
    ```powershell
    netstat -ano | findstr :8000
    ```
-2. Kill the process or change the port in `.env`
+2. Kill the process or change the port in **.env**
 
 ### Issue: Frontend Won't Start
 
@@ -368,7 +388,7 @@ pip install -r requirements.txt
 
 1. Verify the API server is running
 2. Check browser console for errors (F12)
-3. Verify the proxy configuration in `frontend/proxy.conf.json`:
+3. Verify the proxy configuration in **frontend/proxy.conf.json**:
    ```json
    {
      "/api": {

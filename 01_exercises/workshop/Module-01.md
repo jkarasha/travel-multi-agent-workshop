@@ -22,7 +22,7 @@ In this Module, you'll implement your first agent as part of a multi-agent trave
 
 This solution is organized in the folders below:
 
-Open PowerShell and navigate to the workshop `\multi-agent-workshop\01_exercises` directory:
+Open PowerShell and navigate to the workshop **\multi-agent-workshop\01_exercises** directory:
 
 ```powershell
 cd multi-agent-workshop\01_exercises
@@ -99,7 +99,7 @@ The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is an open 
 
 In our travel agent system, MCP consists of three key components:
 
-- **MCP Server** (`mcp_http_server.py`) - Hosts the tools and capabilities (hotel search, restaurant recommendations, etc.) that agents can invoke
+- **MCP Server** (**mcp_http_server.py**) - Hosts the tools and capabilities (hotel search, restaurant recommendations, etc.) that agents can invoke
 - **MCP Client** - Built into our LangGraph agents to communicate with the MCP server
 - **MCP Protocol** - Uses JSON-RPC for reliable, standardized communication between clients and servers
 
@@ -126,9 +126,9 @@ Now that you understand LangGraph and MCP, let's build your first agent. In this
 
 ### Let's begin to create our first agent application
 
-Navigate to the `src/app` folder of your project.
+Navigate to the **src/app** folder of your project.
 
-Open the empty `travel_agents.py` file.
+Open the empty **travel_agents.py** file.
 
 Copy the following code into it.
 
@@ -186,7 +186,7 @@ This code here is the basis upon which we will build our multi-agent application
 
 Agent applications are powered by large language models or LLMs. Defining the behavior for an agent in a system powered by LLMs requires a prompt. This system will have lots of agents and lots of prompts. To simplify construction, we will define a function that loads the prompts for our agents from files.
 
-In the `travel_agents.py` file, navigate to the `# load prompts` comment.
+In the **travel_agents.py** file, navigate to the **# load prompts** comment.
 
 Replace the comment with the following:
 
@@ -236,9 +236,9 @@ In LangGraph there are different types of agents you can create, depending on yo
 
 In LangGraph, the definition of an agent includes any **Tools** it needs to do its job. This often involves retrieving some information or taking some action, like transferring execution to another agent (we will get into that soon). If an agent doesn't require any tools, this is defined as an empty list.
 
-In our simple agent we are going to define a new ReAct Agent as the orchestrator for our app using a built-in function called, `create_react_agent()`. Since this is our first agent, there are no tools to define for it so the tools we define for it will be empty. Notice that this agent also calls the function we defined above, `load_prompt()`.
+In our simple agent we are going to define a new ReAct Agent as the orchestrator for our app using a built-in function called, **create_react_agent()**. Since this is our first agent, there are no tools to define for it so the tools we define for it will be empty. Notice that this agent also calls the function we defined above, **load_prompt()**.
 
-In the `travel_agents.py` file, navigate to the `# define agents & tools` comment.
+In the **travel_agents.py** file, navigate to the **# define agents & tools** comment.
 
 Replace the comment with the following:
 
@@ -321,7 +321,7 @@ async def setup_agents():
 
 Since LangGraph uses a graph-based, the agents, which are comprised of prompts, tools, and functions are implemented as nodes. But humans are also a part of the workflow here so we need to define them as a node too. In our simple sample we have two nodes, one for the orchestrator agent and one for the human.
 
-In the `travel_agents.py` file, navigate to the `# define functions` comment.
+In the **travel_agents.py** file, navigate to the **# define functions** comment.
 
 Replace the comment with the following:
 
@@ -346,7 +346,7 @@ def human_node(state: MessagesState, config) -> None:
 
 ### Built-in Functions
 
-Before we go any further we should cover a few new things you may have seen. LangGraph has a series of built-in functions that you will use when building these types of applications. The first you saw above when we defined our agent, `create_react_agent()`. There are two more used above, `Command()` and `interrupt()`. Here is a short summary of built-in functions.
+Before we go any further we should cover a few new things you may have seen. LangGraph has a series of built-in functions that you will use when building these types of applications. The first you saw above when we defined our agent, **create_react_agent()**. There are two more used above, **Command()** and **interrupt()**. Here is a short summary of built-in functions.
 
 | Function                    | Purpose                                                        |
 |-----------------------------|----------------------------------------------------------------|
@@ -359,11 +359,11 @@ Before we go any further we should cover a few new things you may have seen. Lan
 
 With everything we need for our graph defined we can now define the workflow for our graph.
 
-In LangGraph, the `StateGraph` is the execution engine where everything comes together. It defines the state that holds the information for the workflow, builds the workflow logic, and dynamically executes the workflow based upon the function outputs and logic defined in the graph.
+In LangGraph, the **StateGraph** is the execution engine where everything comes together. It defines the state that holds the information for the workflow, builds the workflow logic, and dynamically executes the workflow based upon the function outputs and logic defined in the graph.
 
 The workflow below is defined with both, the addition of _nodes_ that define who is doing the interacting, and an _edge_ that defines a transition between the two.
 
-In the `travel_agents.py` file, navigate to the `# define workflow` comment.
+In the **travel_agents.py** file, navigate to the **# define workflow** comment.
 
 Replace the comment with the following:
 
@@ -399,8 +399,8 @@ Congratulations, you have created your first AI agent!
 
 We have:
 
-- Used the `create_react_agent` function from the `langgraph.prebuilt` module to create a simple "orchestrator" agent. The function imports the Azure OpenAI model already deployed and defined in `src/app/services/azure_open_ai.py` and returns an agent that can be used to generate completions.
-- Defined a `call_orchestrator_agent` function that invokes the agent and a `human_node` function that collects user input.
+- Used the **create_react_agent** function from the **langgraph.prebuilt** module to create a simple "orchestrator" agent. The function imports the Azure OpenAI model already deployed and defined in **src/app/services/azure_open_ai.py** and returns an agent that can be used to generate completions.
+- Defined a **call_orchestrator_agent** function that invokes the agent and a **human_node** function that collects user input.
 - Created a state graph that defines the flow of the conversation and compiles it into a langgraph object.
 - Added an in-memory checkpoint to save the state of the conversation.
 
@@ -414,9 +414,9 @@ We'll cover **tools** and **agent-to-agent communication** in more detail in the
 
 ### Create MCP Agent Transfer Tool
 
-To begin, navigate to the `mcp_server` folder of your project.
+To begin, navigate to the **mcp_server** folder of your project.
 
-Copy the following code into the empty `mcp_http_server.py` file.
+Copy the following code into the empty **mcp_http_server.py** file.
 
 ```python
 import sys
@@ -587,7 +587,7 @@ if __name__ == "__main__":
         sys.exit(1)    
 ```
 
-Next, navigate back to the `travel_agents.py` file.
+Next, navigate back to the **travel_agents.py** file.
 
 Locate this statment:
 
@@ -605,13 +605,13 @@ orchestrator_tools = filter_tools_by_prefix(all_tools, "transfer_to_itinerary_ge
 
 Now let's add the new Itinerary Generator agent with an empty tool set, and a calling function.
 
-Below `orchestrator_tools`, copy the following:
+Below **orchestrator_tools**, copy the following:
 
 ```python
 itinerary_generator_tools = []
 ```
 
-Below the `orchestrator_agent`, copy the following:
+Below the **orchestrator_agent**, copy the following:
 
 ```python
 itinerary_generator_agent = create_react_agent(
@@ -621,7 +621,7 @@ itinerary_generator_agent = create_react_agent(
     )
 ```
 
-Next, locate the `call_orchestrator_agent` function. Below this call, add a calling function for the itinerary generator agent:
+Next, locate the **call_orchestrator_agent** function. Below this call, add a calling function for the itinerary generator agent:
 
 ```python
 async def call_itinerary_generator_agent(state: MessagesState, config) -> Command[Literal["itinerary_generator", "human"]]:
@@ -688,9 +688,9 @@ To deepen your understanding of effective prompt engineering:
 
 #### Orchestrator Agent Prompt
 
-In your IDE, navigate to the `src/app/prompts` folder in your project.
+In your IDE, navigate to the **src/app/prompts** folder in your project.
 
-Locate and open the empty `orchestrator.prompty` file.
+Locate and open the empty **orchestrator.prompty** file.
 
 Copy and paste the following text into it:
 
@@ -746,7 +746,7 @@ You: "You're welcome! Let me know if you need anything else for your travel plan
 
 #### Itinerary Generator Agent Prompt
 
-Next, locate and open the empty `itinerary_generator.prompty` file.
+Next, locate and open the empty **itinerary_generator.prompty** file.
 
 Copy and paste the following text into it:
 
@@ -840,11 +840,11 @@ After creating the itinerary:
 
 Finally, we need to add the new itinerary generator agent node to the **StateGraph** workflow.
 
-In your IDE, navigate back to the `travel_agents.py` file.
+In your IDE, navigate back to the **travel_agents.py** file.
 
 Navigate towards the end of the file.
 
-Locate this line of code, `builder.add_node("orchestrator", call_orchestrator_agent)`
+Locate this line of code, **builder.add_node("orchestrator", call_orchestrator_agent)**
 
 Add the following line of code below it:
 
@@ -858,9 +858,9 @@ With the activities in this module complete, it is time to test your work!
 
 To do this, we are going to enable two ways of testing our application.
 
-First, we are going to add code to our `travel_agents.py` file.This code defines a new function, `interactive_chat()` that creates a message loop that invokes our StateGraph that we have defined in this file.
+First, we are going to add code to our **travel_agents.py** file.This code defines a new function, **interactive_chat()** that creates a message loop that invokes our StateGraph that we have defined in this file.
 
-To begin, navigate to the end of the `travel_agents.py` file.
+To begin, navigate to the end of the **travel_agents.py** file.
 
 Then paste the following code below all code in this file:
 
@@ -999,7 +999,7 @@ Now let's set up the API layer so that the front end can talk properly to your n
 
 The travel assistant uses a **FastAPI** backend that exposes REST endpoints for the Angular frontend. The API layer acts as a bridge between the web interface and your LangGraph multi-agent system.
 
-Navigate to the `travel_agents_api.py` file:
+Navigate to the **travel_agents_api.py** file:
 
 First, locate this line and uncomment it:
 
@@ -1058,7 +1058,7 @@ You need to have **three components** running simultaneously:
 
 #### Start the Backend API Server
 
-The backend API server should still be running from when you started it in a terminal in Module 00. You also started it with `--reload`, so it should automatically restart on code changes (you should see warnings like "WatchFiles detected changes"). Check if it is still running. If it's not running, or you prefer to restart a fresh instance, open a **new terminal window** (keep the MCP server running) and execute:
+The backend API server should still be running from when you started it in a terminal in Module 00. You also started it with **--reload**, so it should automatically restart on code changes (you should see warnings like "WatchFiles detected changes"). Check if it is still running. If it's not running, or you prefer to restart a fresh instance, open a **new terminal window** (keep the MCP server running) and execute:
 
 > **Important**: Always ensure your virtual environment is activated before starting the server!
 
@@ -1154,9 +1154,9 @@ You should now have **four terminals** with these processes:
 
 | Terminal | Component   | Port | Command                                     |
 |----------|-------------|------|---------------------------------------------|
-| 1        | MCP Server  | 8080 | `python mcp_server/mcp_http_server.py`      |
-| 2        | Backend API | 8000 | `uvicorn src.app.travel_agents_api:app ...` |
-| 3        | Frontend    | 4200 | `npm start`                                 |
+| 1        | MCP Server  | 8080 | **python mcp_server/mcp_http_server.py**      |
+| 2        | Backend API | 8000 | **uvicorn src.app.travel_agents_api:app ...** |
+| 3        | Frontend    | 4200 | **npm start**                                 |
 
 ### Start a Conversation
 
@@ -1186,24 +1186,24 @@ Your implementation is successful if:
 **Issue: Frontend can't connect to backend**
 
 - Verify backend API is running on port 8000
-- Check `frontend/proxy.conf.json` has correct API proxy configuration
+- Check **frontend/proxy.conf.json** has correct API proxy configuration
 - Look for CORS errors in browser console
 
 **Issue: Backend can't connect to MCP server**
 
 - Verify MCP server is running on port 8080
-- Check `.env` file has `MCP_SERVER_BASE_URL=http://localhost:8080`
-- Verify `MCP_AUTH_TOKEN` is set correctly
+- Check **.env** file has **MCP_SERVER_BASE_URL=http://localhost:8080**
+- Verify **MCP_AUTH_TOKEN** is set correctly
 
 **Issue: npm install fails**
 
-- Ensure Node.js version 18+ is installed: `node --version`
-- Clear npm cache: `npm cache clean --force`
-- Delete `node_modules` and `package-lock.json`, then retry
+- Ensure Node.js version 18+ is installed: **node --version**
+- Clear npm cache: **npm cache clean --force**
+- Delete **node_modules** and **package-lock.json**, then retry
 
 **Issue: Port already in use**
 
-- Find process using port: `lsof -i :8000` (macOS/Linux) or `netstat -ano | findstr :8000` (Windows)
+- Find process using port: **lsof -i :8000** (macOS/Linux) or **netstat -ano | findstr :8000** (Windows)
 - Kill the process or use a different port
 
 ## Module Solution

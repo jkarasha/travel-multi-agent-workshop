@@ -41,7 +41,7 @@ In a multi-agent system, specialization enables:
 
 To begin, open the **travel_agents.py** file.
 
-Locate the line `global orchestrator_agent`, and update it with the code below:
+Locate the line **global orchestrator_agent**, and update it with the code below:
 
 ```python
 global orchestrator_agent, hotel_agent, activity_agent, dining_agent
@@ -83,14 +83,14 @@ dining_agent = create_react_agent(
 
 We also need to add calling functions for the two new agents.
 
-First we will add the necessary imports required. Find this import `from langchain_core.messages import AIMessage` and update it with the code below.
+First we will add the necessary imports required. Find this import **from langchain_core.messages import AIMessage** and update it with the code below.
 
 ```python
 from langchain_core.messages import AIMessage, SystemMessage, ToolMessage
 from datetime import datetime, UTC
 ```
 
-Now, find this line `PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompts')` and add this import below it.
+Now, find this line **PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompts')** and add this import below it.
 
 ```python
 from src.app.services.azure_cosmos_db import patch_active_agent, sessions_container, update_session_container
@@ -168,7 +168,7 @@ async def call_dining_agent(state: MessagesState, config) -> Command[
 
 Now, let's update our previous two agents as well that we created in Module 1.
 
-Find `async def call_orchestrator_agent` and update the method with the below code.
+Find **async def call_orchestrator_agent** and update the method with the below code.
 
 ```python
 async def call_orchestrator_agent(state: MessagesState, config) -> Command[Literal["orchestrator", "human"]]:
@@ -220,7 +220,7 @@ async def call_orchestrator_agent(state: MessagesState, config) -> Command[Liter
     return Command(update=response, goto="human")
 ```
 
-Find `async def call_itinerary_generator_agent`, and update the method with the code below.
+Find **async def call_itinerary_generator_agent**, and update the method with the code below.
 
 ```python
 async def call_itinerary_generator_agent(state: MessagesState, config) -> Command[
@@ -251,8 +251,8 @@ async def call_itinerary_generator_agent(state: MessagesState, config) -> Comman
 
 We need to add these agents as nodes in the graph with their calling functions.
 
-1. Locate the `def build_agent_graph` method further below in the file.
-2. Add these three lines to `StateGraph` builder after this line `builder.add_node("orchestrator", call_orchestrator_agent)`.
+1. Locate the **def build_agent_graph** method further below in the file.
+2. Add these three lines to **StateGraph** builder after this line **builder.add_node("orchestrator", call_orchestrator_agent)**.
 
 ```python
 builder.add_node("hotel", call_hotel_agent)
@@ -262,7 +262,7 @@ builder.add_node("dining", call_dining_agent)
 
 Next, we need to add conditional edges between nodes to enable dynamic agent routing based on tool responses.
 
-Above the `def build_agent_graph` function, add the below funcion:
+Above the **def build_agent_graph** function, add the below funcion:
 
 ```python
 def get_active_agent(state: MessagesState, config) -> str:
@@ -310,7 +310,7 @@ def get_active_agent(state: MessagesState, config) -> str:
     return activeAgent
 ```
 
-Then, within the `def build_agent_graph` function, after the line `builder.add_edge(START, "orchestrator")` , add the following code:
+Then, within the **def build_agent_graph** function, after the line **builder.add_edge(START, "orchestrator")** , add the following code:
 
 ```python
 # Orchestrator routing - can route to any specialized agent
@@ -392,7 +392,7 @@ We already added transfer tools in Module 1 that let agents hand off to each oth
 
 Navigate to the file **mcp_server/mcp_http_server.py**.
 
-### Adding `transfer_to` Tools
+### Adding **transfer_to** Tools
 
 Add all these imports to the beginning of the **mcp_http_server.py** file:
 
@@ -409,7 +409,7 @@ from src.app.services.azure_cosmos_db import (
 )
 ```
 
-Find the `def transfer_to_itinerary_generator` method, and paste the following code below it.
+Find the **def transfer_to_itinerary_generator** method, and paste the following code below it.
 
 ```python
 @mcp.tool()
@@ -814,7 +814,7 @@ With the tools defined, we need to update the tool definitions for each agent.
 
 Navigate to the file **src/app/travel_agents.py**.
 
-Locate `orchestrator_tools`, and update it with the code below.
+Locate **orchestrator_tools**, and update it with the code below.
 
 ```python
 orchestrator_tools = filter_tools_by_prefix(all_tools, [
@@ -823,7 +823,7 @@ orchestrator_tools = filter_tools_by_prefix(all_tools, [
     ])
 ```
 
-Locate `itinerary_generator_tools`, and update it with the code below.
+Locate **itinerary_generator_tools**, and update it with the code below.
 
 ```python
 itinerary_generator_tools = filter_tools_by_prefix(all_tools, [
@@ -832,7 +832,7 @@ itinerary_generator_tools = filter_tools_by_prefix(all_tools, [
     ])
 ```
 
-Locate `hotel_tools`, and update it with the code below.
+Locate **hotel_tools**, and update it with the code below.
 
 ```python
 hotel_tools = filter_tools_by_prefix(all_tools, [
@@ -841,7 +841,7 @@ hotel_tools = filter_tools_by_prefix(all_tools, [
     ])
 ```
 
-Locate `activity_tools`, and update it with the code below.
+Locate **activity_tools**, and update it with the code below.
 
 ```python
 activity_tools = filter_tools_by_prefix(all_tools, [
@@ -850,7 +850,7 @@ activity_tools = filter_tools_by_prefix(all_tools, [
     ])
 ```
 
-Locate `dining_tools`, and update it with the code below.
+Locate **dining_tools**, and update it with the code below.
 
 ```python
 dining_tools = filter_tools_by_prefix(all_tools, [
@@ -865,11 +865,11 @@ Now that we've defined agent tools, let's update the agent prompts to guide when
 
 Agent prompts define when and how to use tools. Let's update existing prompts and create new ones for our specialized agents.
 
-Navigate to the `src/app/prompts` folder.
+Navigate to the **src/app/prompts** folder.
 
 #### Update Orchestrator Prompt
 
-Open `orchestrator.prompty` and replace its content:
+Open **orchestrator.prompty** and replace its content:
 
 ```text
 ---
@@ -958,7 +958,7 @@ You: "I'll transfer you to our Itinerary Generator to create your day-by-day pla
 
 #### Update Itinerary Generator Prompt
 
-Open `itinerary_generator.prompty` and replace its content:
+Open **itinerary_generator.prompty** and replace its content:
 
 ```text
 ---
@@ -1095,7 +1095,7 @@ After creating the itinerary:
 
 #### Update Hotel Agent Prompt
 
-Open the empty `hotel_agent.prompty` and paste the following content:
+Open the empty **hotel_agent.prompty** and paste the following content:
 
 ```text
 ---
@@ -1201,7 +1201,7 @@ You: "You're welcome! Let me know if you need anything else for your Barcelona t
 
 #### Create Dining Agent Prompt
 
-Open the empty `dining_agent.prompty` and paste the following content:
+Open the empty **dining_agent.prompty** and paste the following content:
 
 ```text
 ---
@@ -1302,7 +1302,7 @@ You: "Great choice! Flax & Kale is wonderful. Anything else you need for your tr
 
 #### Create Activity Agent Prompt
 
-Open the empty `activity_agent.prompty` and paste the following content:
+Open the empty **activity_agent.prompty** and paste the following content:
 
 ```text
 ---
@@ -1408,7 +1408,7 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 
 **In Terminal 1 (MCP Server):**
 
-1. Stop the currently running MCP server (press `Ctrl+C` in the terminal)
+1. Stop the currently running MCP server (press **Ctrl+C** in the terminal)
 2. Restart it with the commands below:
 
 > **Important**: Always ensure your virtual environment is activated before starting the server!
@@ -1496,23 +1496,23 @@ Check that all components are working:
 **Solution:**
 
 - Restart MCP server (Terminal 1)
-- Check that all tools are decorated with `@mcp.tool()`
-- Verify tool names match in `travel_agents.py`
+- Check that all tools are decorated with **@mcp.tool()**
+- Verify tool names match in **travel_agents.py**
 
 **Issue: No search results returned**
 
 **Solution:**
 
-- Check Cosmos DB connection in `.env`
-- Verify container names: `places`, `sessions`, `trips`
-- Ensure seed data loaded: `python python/data/seed_data.py`
+- Check Cosmos DB connection in **.env**
+- Verify container names: **places**, **sessions**, **trips**
+- Ensure seed data loaded: **python python/data/seed_data.py**
 
 **Issue: Agent doesn't route correctly**
 
 **Solution:**
 
-- Check `get_active_agent` function in `travel_agents.py`
-- Verify conditional edges in `build_agent_graph`
+- Check **get_active_agent** function in **travel_agents.py**
+- Verify conditional edges in **build_agent_graph**
 - Review orchestrator prompt for routing logic
 
 **Issue: Itinerary Generator asks for city even though it was mentioned**
@@ -1521,7 +1521,7 @@ Check that all components are working:
 
 - Check that system message includes conversation context
 - Verify prompt instructs agent to review conversation history
-- Ensure `state["messages"]` contains all previous messages
+- Ensure **state["messages"]** contains all previous messages
 
 ## Module Solution
 

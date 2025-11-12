@@ -200,7 +200,7 @@ Azure Cosmos DB provides:
 
 Let's integrate Azure Cosmos DB as our persistent state store.
 
-Navigate to the `travel_agents.py` file.
+Navigate to the **travel_agents.py** file.
 
 #### Step 1: Add Required Imports
 
@@ -213,7 +213,7 @@ from src.app.services.azure_cosmos_db import DATABASE_NAME, checkpoint_container
 
 #### Step 2: Replace In-Memory Checkpointer
 
-Locate these lines in the `build_agent_graph()` function:
+Locate these lines in the **build_agent_graph()** function:
 
 ```python
 checkpointer = MemorySaver()
@@ -236,7 +236,7 @@ From this point on, the agent will save its state to Azure Cosmos DB. The Cosmos
 
 Let's add memory specific tools to our MCP server.
 
-Navigate to the file `mcp_server/mcp_http_server.py`.
+Navigate to the file **mcp_server/mcp_http_server.py**.
 
 Find these lines of imports:
 
@@ -308,7 +308,7 @@ def recall_memories(
     return memories
 ```
 
-Let's update the `discover_places` method to use the `recall_memories` to get results based on user preferences.
+Let's update the **discover_places** method to use the **recall_memories** to get results based on user preferences.
 
 Locate this code in the file
 
@@ -400,7 +400,7 @@ We need to add these new tools to our agents.
 
 Navigate to the file **src/app/travel_agents.py**.
 
-Locate `hotel_tools`, and update it with the code below.
+Locate **hotel_tools**, and update it with the code below.
 
 ```python
 hotel_tools = filter_tools_by_prefix(all_tools, [
@@ -410,7 +410,7 @@ hotel_tools = filter_tools_by_prefix(all_tools, [
 ])
 ```
 
-Locate `activity_tools`, and update it with the code below.
+Locate **activity_tools**, and update it with the code below.
 
 ```python
 activity_tools = filter_tools_by_prefix(all_tools, [
@@ -420,7 +420,7 @@ activity_tools = filter_tools_by_prefix(all_tools, [
 ])
 ```
 
-Locate `dining_tools`, and update it with the code below.
+Locate **dining_tools**, and update it with the code below.
 
 ```python
 dining_tools = filter_tools_by_prefix(all_tools, [
@@ -436,11 +436,11 @@ Now that we've defined the new agent tools, let's update the agent prompts to gu
 
 Agent prompts define when and how to use tools. Let's update existing prompts.
 
-Navigate to the `src/app/prompts` folder.
+Navigate to the **src/app/prompts** folder.
 
 #### Update Orchestrator Prompt
 
-Open `orchestrator.prompty` and replace its content:
+Open **orchestrator.prompty** and replace its content:
 
 ````text
 ---
@@ -536,7 +536,7 @@ You: "I'll transfer you to our Itinerary Generator to create your day-by-day pla
 
 #### Update Hotel Agent Prompt
 
-Open `hotel_agent.prompty` and replace its content:
+Open **hotel_agent.prompty** and replace its content:
 
 ````text
 ---
@@ -781,7 +781,7 @@ Would you like more options or refine your search?
 
 #### Update Dining Agent Prompt
 
-Open `dining_agent.prompty` and replace its content:
+Open **dining_agent.prompty** and replace its content:
 
 ```text
 ---
@@ -1059,7 +1059,7 @@ Would you like more options or different cuisine?
 
 #### Update Activity Agent Prompt
 
-Open `activity_agent.prompty` and replace its content:
+Open **activity_agent.prompty** and replace its content:
 
 ```text
 --
@@ -1360,7 +1360,7 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 
 **In Terminal 1 (MCP Server):**
 
-1. Stop the currently running MCP server (press `Ctrl+C` in the terminal)
+1. Stop the currently running MCP server (press **Ctrl+C** in the terminal)
 2. Restart it with the commands below:
 
 > **Important**: Always ensure your virtual environment is activated before starting the server!
@@ -1387,7 +1387,7 @@ $env:PYTHONPATH="..\python"; python mcp_http_server.py
 
 **Frontend (Terminal 3)** - No action needed. Angular dev server auto-reloads.
 
-Open your browser to http://localhost:4200 (login as Tony or Steve) and start a new conversation:
+Open your browser to **http://localhost:4200** (login as Tony or Steve) and start a new conversation:
 
 #### Test 1: Query User Preferences (Explicit Memory Recall)
 

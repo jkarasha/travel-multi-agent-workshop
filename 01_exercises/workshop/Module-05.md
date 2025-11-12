@@ -128,14 +128,14 @@ In this activity, you'll create a LangSmith account, generate an API key, and co
 3. Select **API Keys** from the left sidebar
 4. Click **Create API Key**
 5. Give your key a name (e.g., "Travel Assistant Workshop")
-6. Copy the API key - it will start with `lsv2_pt_` 
+6. Copy the API key - it will start with **lsv2_pt_**
    - **Important**: Save this key securely - you won't be able to see it again!
 
 ### Step 3: Add LangSmith Environment Variables
 
-Open the `.env` file in the `python` folder of your codebase.
+Open the **.env** file in the **python** folder of your codebase.
 
-Add these three lines at the end of your `.env` file:
+Add these three lines at the end of your **.env** file:
 
 ```bash
 LANGCHAIN_API_KEY="<your_langsmith_api_key>"
@@ -143,7 +143,7 @@ LANGCHAIN_TRACING_V2="true"
 LANGCHAIN_PROJECT="multi-agent-travel-app"
 ```
 
-Your complete `.env` file should now look like this:
+Your complete **.env** file should now look like this:
 
 ```bash
 COSMOSDB_ENDPOINT="<your_cosmos_db_uri>"
@@ -157,11 +157,11 @@ LANGCHAIN_PROJECT="multi-agent-travel-app"
 
 ## Activity 3: Adding Tracing to Agent Nodes
 
-Agent nodes are the core decision-makers in your multi-agent system. By adding `@traceable` to agent functions, you'll be able to see which agents are called, what decisions they make, and how they route requests to other agents.
+Agent nodes are the core decision-makers in your multi-agent system. By adding **@traceable** to agent functions, you'll be able to see which agents are called, what decisions they make, and how they route requests to other agents.
 
 ### Step 1: Import the traceable Decorator
 
-In your IDE, navigate to the `python/src/app/travel_agents.py` file.
+In your IDE, navigate to the **python/src/app/travel_agents.py** file.
 
 Add this import at the top of the file with your other imports:
 
@@ -171,7 +171,7 @@ from langsmith import traceable
 
 ### Step 2: Add @traceable to Orchestrator Agent
 
-The orchestrator is the entry point for all user requests. Add `@traceable(run_type="llm")` above its function definition:
+The orchestrator is the entry point for all user requests. Add **@traceable(run_type="llm")** above its function definition:
 
 ```python
 @traceable(run_type="llm")
@@ -228,7 +228,7 @@ MCP tools are the actions your agents can perform—transferring between agents,
 
 ### Step 1: Import the traceable Decorator
 
-Navigate to `mcp_server/mcp_http_server.py`.
+Navigate to **mcp_server/mcp_http_server.py**
 
 Add this import at the top of the file:
 
@@ -272,7 +272,7 @@ def transfer_to_dining(reason: str) -> str:
     # Existing code...
 ```
 
-**Note**: We add `@traceable` **below** the `@mcp.tool()` decorator. The `@mcp.tool()` decorator already tells LangSmith this is a tool, so we don't need to specify `run_type="tool"`.
+**Note**: We add **@traceable** **below** the **@mcp.tool()** decorator. The **@mcp.tool()** decorator already tells LangSmith this is a tool, so we don't need to specify **run_type="tool"**.
 
 ### Step 3: Add @traceable to Place Discovery Tool
 
@@ -458,7 +458,7 @@ Database operations can be performance bottlenecks. By tracing Cosmos DB queries
 
 ### Step 1: Import the traceable Decorator
 
-Navigate to `python/src/app/services/azure_cosmos_db.py`.
+Navigate to **python/src/app/services/azure_cosmos_db.py**
 
 Add this import at the top of the file:
 
@@ -468,7 +468,7 @@ from langsmith import traceable
 
 ### Step 2: Add @traceable to Session Management Functions
 
-Use `run_type="retriever"` for functions that retrieve session data from Cosmos DB:
+Use **run_type="retriever"** for functions that retrieve session data from Cosmos DB:
 
 ```python
 @traceable(run_type="retriever")
@@ -487,8 +487,8 @@ def update_session_activity(session_id: str, tenant_id: str, user_id: str):
     # Existing code...
 ```
 
-**Why `run_type="retriever"` for queries?**  
-Functions that retrieve data from storage should use `run_type="retriever"` so LangSmith renders them like RAG retrieval operations, showing query details and results.
+**Why **run_type="retriever"** for queries?**  
+Functions that retrieve data from storage should use **run_type="retriever"** so LangSmith renders them like RAG retrieval operations, showing query details and results.
 
 ### Step 3: Add @traceable to Message Management Functions
 
@@ -749,7 +749,7 @@ With database calls traced, you can now:
 
 ## Activity 6: Test Your Work and Viewing Traces in LangSmith
 
-Now that all your agents, tools, and database functions are instrumented with `@traceable`, it's time to test the system and explore traces in the LangSmith dashboard.
+Now that all your agents, tools, and database functions are instrumented with **@traceable**, it's time to test the system and explore traces in the LangSmith dashboard.
 
 ### Step 1: Start Your Application
 
@@ -855,7 +855,7 @@ Navigate to your LangSmith dashboard and find the most recent trace. You can see
 
 ## TODO: Add image here
 
-You can click on the `extract_preferences_from_message` tool call as highlighted in the image to view the LLM's analysis and extracted preferences.
+You can click on the **extract_preferences_from_message** tool call as highlighted in the image to view the LLM's analysis and extracted preferences.
 
 ## TODO: Add image here
 
