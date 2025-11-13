@@ -126,7 +126,7 @@ Now that you understand LangGraph and MCP, let's build your first agent. In this
 
 ### Let's begin to create our first agent application
 
-Navigate to the **src/app** folder of your project.
+Navigate to the **python/src/app** folder of your project.
 
 Open the empty **travel_agents.py** file.
 
@@ -209,7 +209,7 @@ def filter_tools_by_prefix(tools, prefixes):
 
 ### Global Variables
 
-Navigate to the # global variables comment and replace the comment with the following:
+Navigate to the **# global variables** comment and replace the comment with the following:
 
 ```python
 # Global variables for MCP session management
@@ -399,7 +399,7 @@ Congratulations, you have created your first AI agent!
 
 We have:
 
-- Used the **create_react_agent** function from the **langgraph.prebuilt** module to create a simple "orchestrator" agent. The function imports the Azure OpenAI model already deployed and defined in **src/app/services/azure_open_ai.py** and returns an agent that can be used to generate completions.
+- Used the **create_react_agent** function from the **langgraph.prebuilt** module to create a simple "orchestrator" agent. The function imports the Azure OpenAI model already deployed and defined in **python/src/app/services/azure_open_ai.py** and returns an agent that can be used to generate completions.
 - Defined a **call_orchestrator_agent** function that invokes the agent and a **human_node** function that collects user input.
 - Created a state graph that defines the flow of the conversation and compiles it into a langgraph object.
 - Added an in-memory checkpoint to save the state of the conversation.
@@ -925,16 +925,6 @@ For the rest of the lab, we're going to be testing using the front end by wiring
 
 **First, navigate to the python directory and activate your virtual environment:**
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises/python
-source ../venv/bin/activate
-python -m src.app.travel_agents
-```
-
-**Windows (PowerShell):**
-
 ```powershell
 cd multi-agent-workshop\01_exercises\python
 ..\venv\Scripts\Activate.ps1
@@ -951,17 +941,6 @@ To test your travel agent system, you need to start two components in separate t
 Open a **first terminal window** and run the following commands:
 
 > **Important**: Always ensure your virtual environment is activated before starting any server!
-
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd mcp_server
-PYTHONPATH="../python" python mcp_http_server.py
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises
@@ -1062,16 +1041,6 @@ The backend API server should still be running from when you started it in a ter
 
 > **Important**: Always ensure your virtual environment is activated before starting the server!
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises
@@ -1117,15 +1086,6 @@ Your frontend should already be started from Module 00. If you closed it, open a
 
 > **Note**: The frontend doesn't require virtual environment activation since it uses Node.js, not Python.
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises/frontend
-npm install  # Only needed first time or when dependencies change
-npm start
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises\frontend
