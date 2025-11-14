@@ -245,7 +245,7 @@ def update_session_activity(session_id: str, tenant_id: str, user_id: str):
     
     session = get_session_by_id(session_id, tenant_id, user_id)
     if session:
-        session["lastActivityAt"] = datetime.now(UTC)
+        session["lastActivityAt"] = datetime.now(UTC).isoformat()
         session["messageCount"] = session.get("messageCount", 0) + 1
         sessions_container.upsert_item(session)
 
@@ -1414,7 +1414,7 @@ def store_debug_log(
     
     debug_log_id = str(uuid.uuid4())
     message_id = str(uuid.uuid4())
-    timestamp = datetime.now(UTC)
+    timestamp = datetime.now(UTC).isoformat()
     
     property_bag = [
         {"key": "agent_selected", "value": agent_selected, "timeStamp": timestamp},
