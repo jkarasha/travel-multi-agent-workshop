@@ -72,6 +72,16 @@ You should see **(venv)** appear in your terminal prompt, indicating the virtual
 > Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 > ```
 
+### Step 3: Open Visual Studio Code with our project loaded:
+
+```powershell
+code .
+```
+
+Trust the authors after opening visual studio code, by clicking on the **Yes, I trust the authors** button, like below.
+
+![Testing_3](./media/Module-00/Test-3.png)
+
 ## Activity 3: Start the API Server
 
 Let's start the backend API server.

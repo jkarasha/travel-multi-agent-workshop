@@ -22,6 +22,8 @@ In this Module, you'll implement your first agent as part of a multi-agent trave
 
 This solution is organized in the folders below:
 
+**Skip the below two commands if you have your visual studio code opened already in the project directory**
+
 Open PowerShell and navigate to the workshop **\multi-agent-workshop\01_exercises** directory:
 
 ```powershell
@@ -930,7 +932,6 @@ For the rest of the lab, we're going to be testing using the front end by wiring
 ```bash
 cd multi-agent-workshop/01_exercises/python
 source ../venv/bin/activate
-python -m src.app.travel_agents
 ```
 
 **Windows (PowerShell):**
@@ -938,7 +939,6 @@ python -m src.app.travel_agents
 ```powershell
 cd multi-agent-workshop\01_exercises\python
 ..\venv\Scripts\Activate.ps1
-python -m src.app.travel_agents
 ```
 
 To test your travel agent system, you need to start two components in separate terminal windows:

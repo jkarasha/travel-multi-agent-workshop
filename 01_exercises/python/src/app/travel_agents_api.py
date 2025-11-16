@@ -383,7 +383,7 @@ app.add_middleware(
 # ============================================================================
 
 @app.get(
-    "/",
+    "/health",
     summary="Health Check",
     description="Basic health check endpoint to verify service is running"
 )

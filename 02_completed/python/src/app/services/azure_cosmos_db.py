@@ -7,6 +7,8 @@ from azure.cosmos import CosmosClient
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
 from langgraph_checkpoint_cosmosdb import CosmosDBSaver
+from langsmith import traceable
+
 from src.app.services.azure_open_ai import generate_embedding, extract_keywords
 
 logging.basicConfig(level=logging.INFO)
@@ -184,7 +186,7 @@ def patch_active_agent(tenantId: str, userId: str, sessionId: str, activeAgent: 
 # ============================================================================
 # MCP Tool Functions (for mcp_http_server.py)
 # ============================================================================
-
+@traceable
 def create_session_record(user_id: str, tenant_id: str, activeAgent: str, title: str = None) -> Dict[str, Any]:
     """Create a new session record"""
     if not sessions_container:
@@ -211,6 +213,7 @@ def create_session_record(user_id: str, tenant_id: str, activeAgent: str, title:
     return session
 
 
+@traceable(run_type="retriever")
 def get_session_by_id(session_id: str, tenant_id: str, user_id: str) -> Optional[Dict[str, Any]]:
     """Get session by ID"""
     if not sessions_container:
@@ -238,6 +241,7 @@ def get_session_by_id(session_id: str, tenant_id: str, user_id: str) -> Optional
         return None
 
 
+@traceable
 def update_session_activity(session_id: str, tenant_id: str, user_id: str):
     """Update session's last activity timestamp"""
     if not sessions_container:
@@ -253,7 +257,7 @@ def update_session_activity(session_id: str, tenant_id: str, user_id: str):
 # ============================================================================
 # Message Management Functions
 # ============================================================================
-
+@traceable
 def append_message(
     session_id: str,
     tenant_id: str,
@@ -309,6 +313,7 @@ def append_message(
     return message_id
 
 
+@traceable(run_type="retriever")
 def get_message_by_id(
     message_id: str,
     session_id: str,
@@ -345,6 +350,7 @@ def get_message_by_id(
         return None
 
 
+@traceable(run_type="retriever")
 def get_session_messages(
     session_id: str,
     tenant_id: str,
@@ -379,6 +385,7 @@ def get_session_messages(
     return items
 
 
+@traceable(run_type="retriever")
 def count_active_messages(
     session_id: str,
     tenant_id: str,
@@ -426,7 +433,7 @@ def count_active_messages(
 # ============================================================================
 # Summary Management Functions
 # ============================================================================
-
+@traceable
 def create_summary(
     session_id: str,
     tenant_id: str,
@@ -508,6 +515,7 @@ def create_summary(
     return summary_id
 
 
+@traceable(run_type="retriever")
 def get_session_summaries(
     session_id: str,
     tenant_id: str,
@@ -538,6 +546,7 @@ def get_session_summaries(
     return items
 
 
+@traceable(run_type="retriever")
 def get_user_summaries(
     user_id: str,
     tenant_id: str,
@@ -569,7 +578,7 @@ def get_user_summaries(
 # ============================================================================
 # Memory Management Functions
 # ============================================================================
-
+@traceable
 def store_memory(
     user_id: str,
     tenant_id: str,
@@ -613,6 +622,7 @@ def store_memory(
     return memory_id
 
 
+@traceable
 def update_memory_last_used(
     memory_id: str,
     user_id: str,
@@ -640,6 +650,7 @@ def update_memory_last_used(
         logger.error(f"❌ Failed to update memory lastUsedAt: {e}")
 
 
+@traceable
 def supersede_memory(
     memory_id: str,
     user_id: str,
@@ -682,6 +693,7 @@ def supersede_memory(
         return False
 
 
+@traceable(run_type="retriever")
 def boost_memory_salience(
     memory_id: str,
     user_id: str,
@@ -735,6 +747,7 @@ def boost_memory_salience(
         return {"success": False, "error": str(e)}
 
 
+@traceable(run_type="retriever")
 def query_memories(
     user_id: str,
     tenant_id: str,
@@ -795,6 +808,7 @@ def query_memories(
     return items_sorted
 
 
+@traceable(run_type="retriever")
 def get_all_user_memories(
         user_id: str,
         tenant_id: str,
@@ -844,7 +858,7 @@ def get_all_user_memories(
 # ============================================================================
 # Place Discovery Functions
 # ============================================================================
-
+@traceable(run_type="retriever")
 def query_places_hybrid(
     query: str,
     geo_scope_id: str,
@@ -944,6 +958,7 @@ def query_places_hybrid(
         return []
 
 
+@traceable(run_type="retriever")
 def query_places_with_theme(
     theme: str,
     geo_scope_id: str,
@@ -1072,6 +1087,7 @@ def query_places_with_theme(
         return []
 
 
+@traceable(run_type="retriever")
 def query_places_filtered(
     geo_scope_id: str,
     place_type: Optional[str] = None,
@@ -1165,7 +1181,7 @@ def query_places_filtered(
 # ============================================================================
 # Trip Management Functions
 # ============================================================================
-
+@traceable
 def create_trip(
     user_id: str,
     tenant_id: str,
@@ -1205,6 +1221,7 @@ def create_trip(
     return trip_id
 
 
+@traceable(run_type="retriever")
 def get_trip(trip_id: str, user_id: str, tenant_id: str) -> Optional[Dict[str, Any]]:
     """Get a trip by ID"""
     if not trips_container:
@@ -1235,7 +1252,7 @@ def get_trip(trip_id: str, user_id: str, tenant_id: str) -> Optional[Dict[str, A
 # ============================================================================
 # User Management Functions
 # ============================================================================
-
+@traceable
 def create_user(
     user_id: str,
     tenant_id: str,
@@ -1270,6 +1287,7 @@ def create_user(
     return user_id
 
 
+@traceable(run_type="retriever")
 def get_all_users(tenant_id: str) -> List[Dict[str, Any]]:
     """Get all users for a tenant"""
     if not users_container:
@@ -1295,6 +1313,7 @@ def get_all_users(tenant_id: str) -> List[Dict[str, Any]]:
         return []
 
 
+@traceable(run_type="retriever")
 def get_user_by_id(user_id: str, tenant_id: str) -> Optional[Dict[str, Any]]:
     """Get a user by ID"""
     if not users_container:
