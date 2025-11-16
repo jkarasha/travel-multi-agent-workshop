@@ -769,16 +769,6 @@ Since we've added support for LangSmith, restart all services to load the change
 
 **Terminal 1 (MCP Server):**
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd mcp_server
-PYTHONPATH="../python" python mcp_http_server.py
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises
@@ -789,16 +779,6 @@ $env:PYTHONPATH="..\python"; python mcp_http_server.py
 
 **Terminal 2 (Backend API):**
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises

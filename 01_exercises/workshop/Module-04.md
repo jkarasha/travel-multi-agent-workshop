@@ -2121,16 +2121,6 @@ Stop the currently running MCP server (press **Ctrl+C**), then restart it:
 
 > **Important**: Always ensure your virtual environment is activated!
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd mcp_server
-PYTHONPATH="../python" python mcp_http_server.py
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises
@@ -2143,16 +2133,6 @@ $env:PYTHONPATH="..\python"; python mcp_http_server.py
 
 Stop the currently running backend (press **Ctrl+C**), then restart it:
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Windows (PowerShell/CMD):**
 
 ```powershell
 cd multi-agent-workshop\01_exercises

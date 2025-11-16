@@ -33,7 +33,7 @@ Verify the resources are correctly deployed in the Azure Portal
 - Login using the credentials below 
 - User name +++@lab.CloudPortalCredential(User1).Username+++ 
 - Temporary Access Pass +++@lab.CloudPortalCredential(User1).AccessToken+++ 
-- In the Search box at the top of the Azure Portal, type in resource group. Open the Resource groups blade 
+- In the Search box at the top of the Azure Portal, type in `resource group`. Open the Resource groups blade 
 - Open the resource group that starts with: rg-agentworkshop-. 
 - If the resource group does not appear wait a few moments then refresh. 
 - When the new resource group appears, expand the Overview tab and click deployments.

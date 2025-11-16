@@ -1413,17 +1413,6 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 
 > **Important**: Always ensure your virtual environment is activated before starting the server!
 
-**Linux/Mac/WSL/Codespaces:**
-
-```bash
-cd multi-agent-workshop/01_exercises
-source venv/bin/activate
-cd mcp_server
-PYTHONPATH="../python" python mcp_http_server.py
-```
-
-**Windows (PowerShell/CMD):**
-
 ```powershell
 cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
