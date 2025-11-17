@@ -1,0 +1,51 @@
+[
+    {
+        "inputs": {
+            "question": "I prefer budget hotels"
+        },
+        "outputs": {
+            "required_tools": [
+                "extract_preferences_from_message",
+                "resolve_memory_conflicts",
+                "store_resolved_preferences",
+                "transfer_to_hotel"
+            ]
+        }
+    },
+    {
+        "inputs": {
+            "question": "Find hotels in Barcelona"
+        },
+        "outputs": {
+            "required_tools": [
+                "extract_preferences_from_message",
+                "transfer_to_hotel",
+                "recall_memories"
+            ]
+        }
+    },
+    {
+        "inputs": {
+            "question": "What are my dining preferences?"
+        },
+        "outputs": {
+            "required_tools": [
+                "extract_preferences_from_message",
+                "transfer_to_dining",
+                "recall_memories"
+            ]
+        }
+    },
+    {
+        "inputs": {
+            "question": "Create a 3-day itinerary for Rome"
+        },
+        "outputs": {
+            "required_tools": [
+                "extract_preferences_from_message",
+                "transfer_to_itinerary_generator",
+                "create_new_trip"
+            ]
+        }
+    }
+]
