@@ -188,6 +188,28 @@ Each script follows this pattern:
 
 ## Activity 3: Running End-to-End Evaluation
 
+Open the **.env** file in the **python** folder of your codebase.
+
+Add these three lines at the end of your **.env** file:
+
+```bash
+LANGCHAIN_API_KEY="<your_langsmith_api_key>"
+LANGCHAIN_TRACING_V2="true"
+LANGCHAIN_PROJECT="multi-agent-travel-app"
+```
+
+Your complete **.env** file should now look like this:
+
+```bash
+COSMOSDB_ENDPOINT="<your_cosmos_db_uri>"
+AZURE_OPENAI_ENDPOINT="<your_azure_open_ai_uri>"
+AZURE_OPENAI_EMBEDDINGDEPLOYMENTID="text-embedding-3-small"
+AZURE_OPENAI_COMPLETIONSDEPLOYMENTID="gpt-4.1"
+LANGCHAIN_API_KEY="<your_langsmith_api_key>"
+LANGCHAIN_TRACING_V2="true"
+LANGCHAIN_PROJECT="multi-agent-travel-app"
+```
+
 End-to-end evaluation tests the complete user journey from question to final answer.
 
 ### Step 1: Review the E2E Dataset
