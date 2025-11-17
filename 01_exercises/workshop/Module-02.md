@@ -41,6 +41,25 @@ In a multi-agent system, specialization enables:
 
 To begin, open the **travel_agents.py** file.
 
+Locate the below code:
+
+```python
+# Global agent variables
+orchestrator_agent = None
+itinerary_generator_agent = None
+```
+
+Update it with the below code:
+
+```python
+# Global agent variables
+orchestrator_agent = None
+hotel_agent = None
+activity_agent = None
+dining_agent = None
+itinerary_generator_agent = None
+```
+
 Locate the line **global orchestrator_agent**, and update it with the code below:
 
 ```python
@@ -394,7 +413,7 @@ Navigate to the file **mcp_server/mcp_http_server.py**.
 
 ### Adding **transfer_to** Tools
 
-Add all these imports to the beginning of the **mcp_http_server.py** file:
+Locate this line of code **PROMPT_DIR = os.path.join(os.path.dirname(__file__), '..', 'python', 'src', 'app', 'prompts')**, and add the imports below this line.
 
 ```python
 from src.app.services.azure_cosmos_db import (
@@ -1307,7 +1326,7 @@ Open the empty **activity_agent.prompty** and paste the following content:
 ```text
 ---
 name: Activity Agent
-description: Searches attractions and activities using hybrid search
+description: Searches activities using hybrid search
 authors:
   - Microsoft
 model:
@@ -1317,7 +1336,7 @@ model:
 ---
 
 system:
-You are the Activity Agent for a travel planning system. Your expertise is finding perfect activities and attractions using Azure Cosmos DB's hybrid search.
+You are the Activity Agent for a travel planning system. Your expertise is finding perfect activities and activities using Azure Cosmos DB's hybrid search.
 
 # Your Tools
 
@@ -1341,7 +1360,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
   "user_id": "{from context}",
   "tenant_id": "{from context}",
   "filters": {
-    "type": "attraction",
+    "type": "activity",
     "accessibility": ["wheelchair-friendly"],
     "priceTier": "moderate"
   }
@@ -1349,7 +1368,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
 
 Filter options:
 
-- type: Must be "attraction"
+- type: Must be "activity"
 - accessibility: ["wheelchair-friendly", "audio-guide"]
 - priceTier: "budget" | "moderate" | "luxury"
 
@@ -1368,7 +1387,7 @@ Comprehensive collection of Picasso's works in medieval palaces
 
 # Example Interaction
 User: "What should I do in Barcelona? I love art and architecture"
-You: [Use discover_places with geo_scope="barcelona", query="art museums architecture Gaudi", filters={"type": "attraction"}]
+You: [Use discover_places with geo_scope="barcelona", query="art museums architecture Gaudi", filters={"type": "activity"}]
 
 "Barcelona is perfect for art and architecture lovers! Here are top recommendations:
 
@@ -1411,13 +1430,18 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 1. Stop the currently running MCP server (press **Ctrl+C** in the terminal)
 2. Restart it with the commands below:
 
-> **Important**: Always ensure your virtual environment is activated before starting the server!
+```powershell
+cd mcp_server
+$env:PYTHONPATH="..\python"; python mcp_http_server.py
+```
+
+**Important**: Always ensure your virtual environment is activated before starting the server!
+
+You must be in **multi-agent-workshop\01_exercises** folder and then use the below commands to activate the virtual environment. And after activating the environment, follow the above commands to re-start the mcp server.  
 
 ```powershell
 cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
-cd mcp_server
-$env:PYTHONPATH="..\python"; python mcp_http_server.py
 ```
 
 **Backend API (Terminal 2)** - No action needed. Watchfiles will auto-reload changes.
@@ -1468,15 +1492,15 @@ The output should look like this:
 Check that all components are working:
 
 | Component                | What to Check                         | Status |
-| ------------------------ | ------------------------------------- | ------ |
-| **MCP Server**           | Shows all 10+ tools on startup        | ⬜     |
-| **Orchestrator**         | Routes to correct specialized agents  | ⬜     |
-| **Hotel Agent**          | Searches with type="hotel" filter     | ⬜     |
-| **Dining Agent**         | Applies dietary filters correctly     | ⬜     |
-| **Activity Agent**       | Returns attractions and activities    | ⬜     |
-| **Itinerary Generator**  | Creates and saves trips               | ⬜     |
-| **Hybrid Search**        | Returns semantically relevant results | ⬜     |
-| **Context Preservation** | Agents remember conversation history  | ⬜     |
+|--------------------------|---------------------------------------|--------|
+| **MCP Server**           | Shows all 10+ tools on startup        | ⬜      |
+| **Orchestrator**         | Routes to correct specialized agents  | ⬜      |
+| **Hotel Agent**          | Searches with type="hotel" filter     | ⬜      |
+| **Dining Agent**         | Applies dietary filters correctly     | ⬜      |
+| **Activity Agent**       | Returns attractions and activities    | ⬜      |
+| **Itinerary Generator**  | Creates and saves trips               | ⬜      |
+| **Hybrid Search**        | Returns semantically relevant results | ⬜      |
+| **Context Preservation** | Agents remember conversation history  | ⬜      |
 
 ### Common Issues and Troubleshooting
 
@@ -1584,7 +1608,6 @@ hotel_agent = None
 activity_agent = None
 dining_agent = None
 itinerary_generator_agent = None
-summarizer_agent = None
 
 
 async def setup_agents():
@@ -3036,7 +3059,7 @@ You: "Great choice! Flax & Kale is wonderful. Anything else you need for your tr
 ```text
 ---
 name: Activity Agent
-description: Searches attractions and activities using hybrid search
+description: Searches activities using hybrid search
 authors:
   - Microsoft
 model:
@@ -3046,7 +3069,7 @@ model:
 ---
 
 system:
-You are the Activity Agent for a travel planning system. Your expertise is finding perfect activities and attractions using Azure Cosmos DB's hybrid search.
+You are the Activity Agent for a travel planning system. Your expertise is finding perfect activities and activities using Azure Cosmos DB's hybrid search.
 
 # Your Tools
 
@@ -3070,7 +3093,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
   "user_id": "{from context}",
   "tenant_id": "{from context}",
   "filters": {
-    "type": "attraction",
+    "type": "activity",
     "accessibility": ["wheelchair-friendly"],
     "priceTier": "moderate"
   }
@@ -3078,7 +3101,7 @@ You are the Activity Agent for a travel planning system. Your expertise is findi
 
 Filter options:
 
-- type: Must be "attraction"
+- type: Must be "activity"
 - accessibility: ["wheelchair-friendly", "audio-guide"]
 - priceTier: "budget" | "moderate" | "luxury"
 
@@ -3097,7 +3120,7 @@ Comprehensive collection of Picasso's works in medieval palaces
 
 # Example Interaction
 User: "What should I do in Barcelona? I love art and architecture"
-You: [Use discover_places with geo_scope="barcelona", query="art museums architecture Gaudi", filters={"type": "attraction"}]
+You: [Use discover_places with geo_scope="barcelona", query="art museums architecture Gaudi", filters={"type": "activity"}]
 
 "Barcelona is perfect for art and architecture lovers! Here are top recommendations:
 

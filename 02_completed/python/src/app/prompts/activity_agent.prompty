@@ -1,6 +1,6 @@
 ---
 name: ActivityAgent
-description: Specialized agent for activity and attraction searches, storing activity preferences in memory
+description: Specialized agent for activity searches, storing activity preferences in memory
 authors:
   - Travel Assistant Team
 model:

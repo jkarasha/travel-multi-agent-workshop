@@ -1,4 +1,4 @@
-# Module 05 - Observability & Experimentation
+# Module 05 - Observability & Tracing
 
 **[< Making Memory Intelligent](./Module-04.md)** - **[Lessons Learned, Agent and Memory Future, Q&A >](./Module-06.md)**
 
@@ -768,31 +768,42 @@ In your terminal, navigate to the app directory and start the FastAPI server:
 Since we've added support for LangSmith, restart all services to load the changes.
 
 **Terminal 1 (MCP Server):**
-
+Stop the currently running MCP server (press **Ctrl+C**), then restart it:
 
 ```powershell
-cd multi-agent-workshop\01_exercises
-.\venv\Scripts\Activate.ps1
 cd mcp_server
 $env:PYTHONPATH="..\python"; python mcp_http_server.py
 ```
 
-**Terminal 2 (Backend API):**
+**Important**: Always ensure your virtual environment is activated before starting the server!
 
+You must be in **multi-agent-workshop\01_exercises** folder and then use the below commands to activate the virtual environment. And after activating the environment, follow the above commands to re-start the mcp server.  
 
 ```powershell
 cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
+```
+
+**Terminal 2 (Backend API):**
+Stop the currently running backend (press **Ctrl+C**), then restart it:
+
+```powershell
 cd python
 uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
+**Important**: Always ensure your virtual environment is activated before starting the server!
+
+You must be in **multi-agent-workshop\01_exercises** folder and then use the below commands to activate the virtual environment. And after activating the environment, follow the above commands to re-start the backend server.  
+
+```powershell
+cd multi-agent-workshop\01_exercises
+.\venv\Scripts\Activate.ps1
+```
+
 **Terminal 3 (Frontend):**
-
-**All Platforms:**
-
-```bash
-cd multi-agent-workshop/01_exercises/frontend
+Stop the currently running frontend (press **Ctrl+C**), then restart it:
+```powershell
 npm start
 ```
 

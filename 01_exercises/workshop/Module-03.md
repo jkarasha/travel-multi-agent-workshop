@@ -323,73 +323,73 @@ except Exception as e:
 After this, add the following code to use the memories:
 
 ```python
-# Get user memories for alignment
-logger.info(f"🧠 Recalling user memories...")
-memories = recall_memories(
-    user_id=user_id,
-    tenant_id=tenant_id,
-    query=query
-)
-logger.info(f"🧠 Found {len(memories)} memories")
-
-# Memory alignment scoring and match reason generation
-used_memory_ids = set()  # Track which memories were actually used
-
-for place in places:
-    alignment_score = 0.0
-    match_reasons = ["Hybrid search match (text + semantic)"]
-
-    # Check alignment with user memories
-    if memories:
-        for memory in memories:
-            memory_facets = memory.get("facets", {})
-            memory_id = memory.get("id")
-            memory_used = False
-
-            # Dietary alignment
-            if "dietary" in memory_facets:
-                memory_dietary = memory_facets["dietary"]
-                place_dietary = place.get("dietary", [])
-                if memory_dietary in place_dietary:
-                    alignment_score += 0.3
-                    match_reasons.append(f"Matches your {memory_dietary} preference")
-                    memory_used = True
-
-            # Price tier alignment
-            if "priceTier" in memory_facets:
-                memory_price = memory_facets["priceTier"]
-                place_price = place.get("priceTier")
-                if memory_price == place_price:
-                    alignment_score += 0.2
-                    match_reasons.append(f"Matches your {place_price} preference")
-                    memory_used = True
-
-            # Accessibility alignment
-            if "accessibility" in memory_facets:
-                memory_access = memory_facets["accessibility"]
-                place_access = place.get("accessibility", [])
-                if memory_access in place_access:
-                    alignment_score += 0.3
-                    match_reasons.append(f"Accessible: {memory_access}")
-                    memory_used = True
-
-            # Track this memory as used if it influenced the recommendation
-            if memory_used and memory_id:
-                used_memory_ids.add(memory_id)
-
-    # Add memory alignment to place
-    place["memoryAlignment"] = min(alignment_score, 1.0)
-    place["matchReasons"] = match_reasons
-
-# Update lastUsedAt only for memories that were actually used
-if used_memory_ids:
-    logger.info(f"🔄 Updating lastUsedAt for {len(used_memory_ids)} memories that influenced recommendations")
-    for memory_id in used_memory_ids:
-        update_memory_last_used(
-            memory_id=memory_id,
-            user_id=user_id,
-            tenant_id=tenant_id
-        )
+    # Get user memories for alignment
+    logger.info(f"🧠 Recalling user memories...")
+    memories = recall_memories(
+        user_id=user_id,
+        tenant_id=tenant_id,
+        query=query
+    )
+    logger.info(f"🧠 Found {len(memories)} memories")
+    
+    # Memory alignment scoring and match reason generation
+    used_memory_ids = set()  # Track which memories were actually used
+    
+    for place in places:
+        alignment_score = 0.0
+        match_reasons = ["Hybrid search match (text + semantic)"]
+    
+        # Check alignment with user memories
+        if memories:
+            for memory in memories:
+                memory_facets = memory.get("facets", {})
+                memory_id = memory.get("id")
+                memory_used = False
+    
+                # Dietary alignment
+                if "dietary" in memory_facets:
+                    memory_dietary = memory_facets["dietary"]
+                    place_dietary = place.get("dietary", [])
+                    if memory_dietary in place_dietary:
+                        alignment_score += 0.3
+                        match_reasons.append(f"Matches your {memory_dietary} preference")
+                        memory_used = True
+    
+                # Price tier alignment
+                if "priceTier" in memory_facets:
+                    memory_price = memory_facets["priceTier"]
+                    place_price = place.get("priceTier")
+                    if memory_price == place_price:
+                        alignment_score += 0.2
+                        match_reasons.append(f"Matches your {place_price} preference")
+                        memory_used = True
+    
+                # Accessibility alignment
+                if "accessibility" in memory_facets:
+                    memory_access = memory_facets["accessibility"]
+                    place_access = place.get("accessibility", [])
+                    if memory_access in place_access:
+                        alignment_score += 0.3
+                        match_reasons.append(f"Accessible: {memory_access}")
+                        memory_used = True
+    
+                # Track this memory as used if it influenced the recommendation
+                if memory_used and memory_id:
+                    used_memory_ids.add(memory_id)
+    
+        # Add memory alignment to place
+        place["memoryAlignment"] = min(alignment_score, 1.0)
+        place["matchReasons"] = match_reasons
+    
+    # Update lastUsedAt only for memories that were actually used
+    if used_memory_ids:
+        logger.info(f"🔄 Updating lastUsedAt for {len(used_memory_ids)} memories that influenced recommendations")
+        for memory_id in used_memory_ids:
+            update_memory_last_used(
+                memory_id=memory_id,
+                user_id=user_id,
+                tenant_id=tenant_id
+            )
 ```
 
 ## Activity 4: Integrating Tools with Agents
@@ -1361,13 +1361,18 @@ Since we added new tools to the MCP server, we need to restart it to load the ch
 1. Stop the currently running MCP server (press **Ctrl+C** in the terminal)
 2. Restart it with the commands below:
 
-> **Important**: Always ensure your virtual environment is activated before starting the server!
+```powershell
+cd mcp_server
+$env:PYTHONPATH="..\python"; python mcp_http_server.py
+```
+
+**Important**: Always ensure your virtual environment is activated before starting the server!
+
+You must be in **multi-agent-workshop\01_exercises** folder and then use the below commands to activate the virtual environment. And after activating the environment, follow the above commands to re-start the mcp server.  
 
 ```powershell
 cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
-cd mcp_server
-$env:PYTHONPATH="..\python"; python mcp_http_server.py
 ```
 
 **Backend API (Terminal 2)** - No action needed. Watchfiles will auto-reload changes.
@@ -1438,16 +1443,16 @@ The output should look something like this:
 After completing all tests, verify:
 
 | Component                     | What to Check                                            | Status |
-| ----------------------------- | -------------------------------------------------------- | ------ |
-| **Memory Recall Tool**        | `recall_memories` returns Tony's preferences             | ⬜     |
-| **Hotel Memories**            | Wheelchair access, luxury preference, spa amenity        | ⬜     |
-| **Dining Memories**           | Vegetarian restriction, Italian cuisine preference       | ⬜     |
-| **Activity Memories**         | Art museum interest, wheelchair requirement              | ⬜     |
-| **Automatic Filtering**       | `discover_places` applies memories without explicit call | ⬜     |
-| **Memory Alignment Scores**   | Results show match percentages (90-100%)                 | ⬜     |
-| **Match Reasons**             | Results explain why they match preferences               | ⬜     |
-| **Cross-Session Persistence** | Memories survive new sessions                            | ⬜     |
-| **Safety-Critical Filtering** | Dietary/accessibility requirements always enforced       | ⬜     |
+|-------------------------------|----------------------------------------------------------|--------|
+| **Memory Recall Tool**        | `recall_memories` returns Tony's preferences             | ⬜      |
+| **Hotel Memories**            | Wheelchair access, luxury preference, spa amenity        | ⬜      |
+| **Dining Memories**           | Vegetarian restriction, Italian cuisine preference       | ⬜      |
+| **Activity Memories**         | Art museum interest, wheelchair requirement              | ⬜      |
+| **Automatic Filtering**       | `discover_places` applies memories without explicit call | ⬜      |
+| **Memory Alignment Scores**   | Results show match percentages (90-100%)                 | ⬜      |
+| **Match Reasons**             | Results explain why they match preferences               | ⬜      |
+| **Cross-Session Persistence** | Memories survive new sessions                            | ⬜      |
+| **Safety-Critical Filtering** | Dietary/accessibility requirements always enforced       | ⬜      |
 
 ### Common Issues and Troubleshooting
 
@@ -1561,7 +1566,6 @@ hotel_agent = None
 activity_agent = None
 dining_agent = None
 itinerary_generator_agent = None
-summarizer_agent = None
 
 
 async def setup_agents():

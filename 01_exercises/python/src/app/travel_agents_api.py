@@ -329,12 +329,12 @@ agent_mapping = {
 #                 logger.error("All retry attempts failed. Service will start but agents won't be available.")
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup resources on shutdown"""
-    logger.info("Shutting down Travel Assistant API...")
-    # await cleanup_persistent_session()
-    logger.info("Cleanup complete")
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     """Cleanup resources on shutdown"""
+#     logger.info("Shutting down Travel Assistant API...")
+#     await cleanup_persistent_session()
+#     logger.info("Cleanup complete")
 
 
 # async def ensure_agents_initialized():

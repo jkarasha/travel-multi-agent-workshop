@@ -1,6 +1,6 @@
 # Module 04 - Making Memory Intelligent
 
-**[< Adding Memory to our Agents](./Module-03.md)** - **[Monitoring Your Agent Ecosystem >](./Module-05.md)**
+**[< Adding Memory to our Agents](./Module-03.md)** - **[Observability & Tracing >](./Module-05.md)**
 
 ## Introduction
 
@@ -1094,7 +1094,7 @@ builder.add_conditional_edges(
 )
 ```
 
-Add summarizer routing. Locate the `checkpointer = CosmosDBSaver`, and add the following code above it:
+Add summarizer routing. Locate the **checkpointer = CosmosDBSaver**, and add the following code above it:
 
 ```python
 # Summarizer routing - can only return to orchestrator
@@ -2119,26 +2119,36 @@ Since we've added new tools and agent logic, we need to restart all services to 
 
 Stop the currently running MCP server (press **Ctrl+C**), then restart it:
 
-> **Important**: Always ensure your virtual environment is activated!
+```powershell
+cd mcp_server
+$env:PYTHONPATH="..\python"; python mcp_http_server.py
+```
 
+**Important**: Always ensure your virtual environment is activated before starting the server!
+
+You must be in **multi-agent-workshop\01_exercises** folder and then use the below commands to activate the virtual environment. And after activating the environment, follow the above commands to re-start the mcp server.  
 
 ```powershell
 cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
-cd mcp_server
-$env:PYTHONPATH="..\python"; python mcp_http_server.py
 ```
 
 **Terminal 2 (Backend API):**
 
 Stop the currently running backend (press **Ctrl+C**), then restart it:
 
+```powershell
+cd python
+uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Important**: Always ensure your virtual environment is activated before starting the server!
+
+You must be in **multi-agent-workshop\01_exercises** folder and then use the below commands to activate the virtual environment. And after activating the environment, follow the above commands to re-start the backend server.  
 
 ```powershell
 cd multi-agent-workshop\01_exercises
 .\venv\Scripts\Activate.ps1
-cd python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 3 (Frontend):**
@@ -5179,4 +5189,4 @@ In this Module, you:
 
 ## What's Next?
 
-Proceed to Module 05: **[Observability & Experimentation](./Module-05.md)**
+Proceed to Module 05: **[Observability & Tracing](./Module-05.md)**

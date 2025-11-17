@@ -188,7 +188,7 @@ This code here is the basis upon which we will build our multi-agent application
 
 Agent applications are powered by large language models or LLMs. Defining the behavior for an agent in a system powered by LLMs requires a prompt. This system will have lots of agents and lots of prompts. To simplify construction, we will define a function that loads the prompts for our agents from files.
 
-In the **travel_agents.py** file, navigate to the **# load prompts** comment.
+In the **travel_agents.py** file, navigate to the **load prompts** comment.
 
 Replace the comment with the following:
 
@@ -211,7 +211,7 @@ def filter_tools_by_prefix(tools, prefixes):
 
 ### Global Variables
 
-Navigate to the **# global variables** comment and replace the comment with the following:
+Navigate to the **global variables** comment and replace the comment with the following:
 
 ```python
 # Global variables for MCP session management
@@ -240,7 +240,7 @@ In LangGraph, the definition of an agent includes any **Tools** it needs to do i
 
 In our simple agent we are going to define a new ReAct Agent as the orchestrator for our app using a built-in function called, **create_react_agent()**. Since this is our first agent, there are no tools to define for it so the tools we define for it will be empty. Notice that this agent also calls the function we defined above, **load_prompt()**.
 
-In the **travel_agents.py** file, navigate to the **# define agents & tools** comment.
+In the **travel_agents.py** file, navigate to the **define agents & tools** comment.
 
 Replace the comment with the following:
 
@@ -323,7 +323,7 @@ async def setup_agents():
 
 Since LangGraph uses a graph-based, the agents, which are comprised of prompts, tools, and functions are implemented as nodes. But humans are also a part of the workflow here so we need to define them as a node too. In our simple sample we have two nodes, one for the orchestrator agent and one for the human.
 
-In the **travel_agents.py** file, navigate to the **# define functions** comment.
+In the **travel_agents.py** file, navigate to the **define functions** comment.
 
 Replace the comment with the following:
 
@@ -365,7 +365,7 @@ In LangGraph, the **StateGraph** is the execution engine where everything comes 
 
 The workflow below is defined with both, the addition of _nodes_ that define who is doing the interacting, and an _edge_ that defines a transition between the two.
 
-In the **travel_agents.py** file, navigate to the **# define workflow** comment.
+In the **travel_agents.py** file, navigate to the **define workflow** comment.
 
 Replace the comment with the following:
 
@@ -948,13 +948,11 @@ To test your travel agent system, you need to start two components in separate t
 
 #### Step 1: Start the MCP Server
 
-Open a **first terminal window** and run the following commands:
+In the **terminal window** opened, run the following commands:
 
 > **Important**: Always ensure your virtual environment is activated before starting any server!
 
 ```powershell
-cd multi-agent-workshop\01_exercises
-.\venv\Scripts\Activate.ps1
 cd mcp_server
 $env:PYTHONPATH="../python"; python mcp_http_server.py
 ```
@@ -1000,6 +998,7 @@ Next, find the following two commented out functions and uncomment them:
 
 - **initialize_agents**
 - **ensure_agents_initialized**
+- **shutdown_event**
 
 Lastly, find the below code, comment it out, and uncomment the fully implemented version below it.
 
@@ -1122,8 +1121,8 @@ NOTE: Raw file sizes do not reflect development server per-request transformatio
 
 You should now have **four terminals** with these processes:
 
-| Terminal | Component   | Port | Command                                     |
-|----------|-------------|------|---------------------------------------------|
+| Terminal | Component   | Port | Command                                       |
+|----------|-------------|------|-----------------------------------------------|
 | 1        | MCP Server  | 8080 | **python mcp_server/mcp_http_server.py**      |
 | 2        | Backend API | 8000 | **uvicorn src.app.travel_agents_api:app ...** |
 | 3        | Frontend    | 4200 | **npm start**                                 |
