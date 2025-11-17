@@ -1,6 +1,6 @@
 # Module 05 - Observability & Tracing
 
-**[< Making Memory Intelligent](./Module-04.md)** - **[Lessons Learned, Agent and Memory Future, Q&A >](./Module-06.md)**
+**[< Making Memory Intelligent](./Module-04.md)** - **[Evaluating Your Multi-Agent Application >](./Module-06.md)**
 
 ## Introduction
 
@@ -888,4 +888,4 @@ With observability in place, you can:
 
 ## What's Next?
 
-Proceed to Module 06: **[Lessons Learned, Agent and Memory Future, Q&A](./Module-05.md)**
+Proceed to Module 06: **[Evaluating Your Multi-Agent Application](./Module-05.md)**

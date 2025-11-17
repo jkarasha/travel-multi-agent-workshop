@@ -1,0 +1,58 @@
+[
+    {
+        "inputs": {
+            "question": "Find hotels in Barcelona"
+        },
+        "outputs": {
+            "expected_route": "hotel"
+        }
+    },
+    {
+        "inputs": {
+            "question": "Show me museums in London"
+        },
+        "outputs": {
+            "expected_route": "activity"
+        }
+    },
+    {
+        "inputs": {
+            "question": "Create a 3-day itinerary for Paris"
+        },
+        "outputs": {
+            "expected_route": "itinerary_generator"
+        }
+    },
+    {
+        "inputs": {
+            "question": "What are my hotel preferences?"
+        },
+        "outputs": {
+            "expected_route": "hotel"
+        }
+    },
+    {
+        "inputs": {
+            "question": "I prefer luxury hotels"
+        },
+        "outputs": {
+            "expected_route": "orchestrator"
+        }
+    },
+    {
+        "inputs": {
+            "question": "Find me some activities"
+        },
+        "outputs": {
+            "expected_route": "activity"
+        }
+    },
+    {
+        "inputs": {
+            "question": "Where should I eat dinner?"
+        },
+        "outputs": {
+            "expected_route": "dining"
+        }
+    }
+]
