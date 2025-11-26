@@ -408,7 +408,7 @@ We have:
 
 ## Activity 2: Create a Simple Itinerary Generator Agent
 
-In this activity, you will create a simple itinerary generator agent that synthesizes user preferences and travel information into comprehensive trip plans using Azure OpenAI's large language model.
+In this activity, you will create a simple itinerary generator agent that synthesizes user preferences and travel information into comprehensive trip plans using an LLM from Azure OpenAI Service.
 
 We've now created an orchestrator agent that can route requests to different specialized agents. Now, let's create an itinerary generator agent that can take travel information and generate day-by-day trip plans.
 

@@ -6,7 +6,7 @@
 
 In Module 01, you built the foundation of your multi-agent system with an orchestrator and itinerary generator. Now it's time to add specialized domain experts that can help users discover specific types of travel recommendations.
 
-In this module, you'll implement three specialized agents - each with its own expertise, tools, and decision-making capabilities. The **Hotel Agent** will search accommodations, the **Dining Agent** will discover restaurants, and the **Activity Agent** will recommend attractions and experiences. Each agent will use Azure Cosmos DB's vector and hybrid search capabilities to find semantically relevant recommendations based on user preferences.
+In this module, you'll implement three specialized agents, each with its own expertise, tools, and decision-making capabilities. The **Hotel Agent** will search accommodations, the **Dining Agent** will discover restaurants, and the **Activity Agent** will recommend attractions and experiences. Each agent will use Azure Cosmos DB's vector and hybrid search capabilities to find semantically relevant recommendations based on user preferences.
 
 By the end of this module, you'll have a complete multi-agent ecosystem where the orchestrator intelligently routes requests to the appropriate specialist, and the itinerary generator can synthesize all recommendations into comprehensive trip plans.
 
