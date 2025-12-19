@@ -23,6 +23,7 @@ from src.app.services.azure_cosmos_db import (  # noqa: E402
     trips_container,
     update_memory_last_used
 )
+from src.app.services.azure_open_ai import get_openai_client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -593,6 +594,118 @@ def recall_memories(
     )
 
     return memories
+
+@mcp.tool()
+def extract_preferences_from_message(
+        message: str,
+        role: str,
+        user_id: str,
+        tenant_id: str
+) -> Dict[str, Any]:
+    """
+    Extract travel preferences from a user or assistant message using LLM.
+    Smart enough to skip greetings, simple yes/no, and other non-preference messages.
+
+    Args:
+        message: The message text to analyze
+        role: Message role (user/assistant)
+        user_id: User identifier (for logging)
+        tenant_id: Tenant identifier (for logging)
+
+    Returns:
+        Dictionary with:
+        - shouldExtract: bool (whether to extract)
+        - skipReason: str (reason if skipped)
+        - preferences: list of extracted preferences with category, value, text, salience, type
+    """
+    logger.info(f"🔍 Extracting preferences from {role} message for user {user_id}")
+
+    try:
+        # Load prompty template
+        template = load_prompty_template("preference_extraction.prompty")
+
+        # Call LLM
+        response_text = call_llm_with_prompt(
+            template=template,
+            variables={"message": message, "role": role},
+            temperature=0.3
+        )
+
+        # Parse JSON response
+        response_json = json.loads(response_text)
+
+        logger.info(f"✅ Extraction complete: shouldExtract={response_json.get('shouldExtract', False)}")
+        return response_json
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse LLM response as JSON: {e}")
+        return {
+            "shouldExtract": False,
+            "skipReason": "LLM response parsing error",
+            "preferences": []
+        }
+    except Exception as e:
+        logger.error(f"Error extracting preferences: {e}")
+        return {
+            "shouldExtract": False,
+            "skipReason": f"Error: {str(e)}",
+            "preferences": []
+        }
+
+def load_prompty_template(filename: str) -> str:
+    """Load prompty file content (strips frontmatter, returns system+user sections)"""
+    file_path = os.path.join(PROMPT_DIR, filename)
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            # Remove frontmatter (--- ... ---) if present
+            if content.startswith("---"):
+                parts = content.split("---", 2)
+                if len(parts) >= 3:
+                    content = parts[2].strip()
+            return content
+    except FileNotFoundError:
+        logger.error(f"Prompty file not found: {file_path}")
+        raise
+
+def call_llm_with_prompt(template: str, variables: Dict[str, Any], temperature: float = 0.3) -> str:
+    """
+    Call Azure OpenAI with a prompt template and variables.
+
+    Args:
+        template: Prompt template with {{variable}} placeholders
+        variables: Dictionary of variable values to substitute
+        temperature: LLM temperature (default 0.3 for structured output)
+
+    Returns:
+        LLM response content as string (with markdown code blocks stripped if present)
+    """
+    client = get_openai_client()
+
+    # Substitute variables in template
+    prompt = template
+    for key, value in variables.items():
+        prompt = prompt.replace(f"{{{{{key}}}}}", str(value))
+
+    response = client.chat.completions.create(
+        model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        messages=[{"role": "user", "content": prompt}],
+        temperature=temperature,
+        max_tokens=2000
+    )
+
+    content = response.choices[0].message.content
+
+    # Strip markdown code blocks if present (```json ... ``` or ``` ... ```)
+    if content.startswith("```"):
+        # Remove opening ```json or ```
+        content = content.split("\n", 1)[1] if "\n" in content else content[3:]
+        # Remove closing ```
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+    return content
 
 # ============================================================================
 # Server Startup
