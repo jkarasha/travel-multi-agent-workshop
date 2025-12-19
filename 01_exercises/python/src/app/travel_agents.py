@@ -17,7 +17,7 @@ from src.app.services.azure_open_ai import model
 from src.app.services.azure_cosmos_db import patch_active_agent, sessions_container, update_session_container
 
 from langgraph_checkpoint_cosmosdb import CosmosDBSaver
-from src.app.services.azure_cosmos_db import DATABASE_NAME, checkpoint_container
+from src.app.services.azure_cosmos_db import count_active_messages, DATABASE_NAME, checkpoint_container
 
 local_interactive_mode = False
 
@@ -60,10 +60,11 @@ hotel_agent = None
 activity_agent = None
 dining_agent = None
 itinerary_generator_agent = None
+summarizer_agent = None
 
 # define agents & tools
 async def setup_agents():
-    global orchestrator_agent, hotel_agent, activity_agent, dining_agent, itinerary_generator_agent
+    global orchestrator_agent, hotel_agent, activity_agent, dining_agent, itinerary_generator_agent, summarizer_agent
     global _mcp_client, _session_context, _persistent_session
 
     logger.info("Starting Travel Assistant MCP client...")
@@ -147,6 +148,11 @@ async def setup_agents():
         "recall_memories",
         "transfer_to_orchestrator", "transfer_to_itinerary_generator"
     ])
+    summarizer_tools = filter_tools_by_prefix(all_tools, [
+        "get_summarizable_span", "mark_span_summarized", "get_session_context",
+        "get_all_user_summaries",
+        "transfer_to_orchestrator"
+    ])
 
     # Create agents with their tools
     orchestrator_agent = create_react_agent(
@@ -177,6 +183,11 @@ async def setup_agents():
         model,
         dining_tools,
         state_modifier=load_prompt("dining_agent")
+    )
+    summarizer_agent = create_react_agent(
+        model,
+        summarizer_tools,
+        state_modifier=load_prompt("summarizer")
     )
 
 # define functions
@@ -314,6 +325,30 @@ async def call_dining_agent(state: MessagesState, config) -> Command[
     response = await dining_agent.ainvoke(state, config)
     return Command(update=response, goto="human")
 
+async def call_summarizer_agent(state: MessagesState, config) -> Command[
+    Literal["summarizer", "orchestrator", "human"]]:
+    """
+    Summarizer agent: Compresses conversation history.
+    Auto-triggered every 10 turns.
+    """
+    thread_id = config["configurable"].get("thread_id", "UNKNOWN_THREAD_ID")
+    user_id = config["configurable"].get("userId", "UNKNOWN_USER_ID")
+    tenant_id = config["configurable"].get("tenantId", "UNKNOWN_TENANT_ID")
+
+    logger.info("📝 Summarizer compressing conversation...")
+
+    # Patch active agent in database
+    if local_interactive_mode:
+        patch_active_agent(tenant_id or "cli-test", user_id or "cli-test", thread_id, "summarizer_agent")
+
+    # Add context about available parameters
+    state["messages"].append(SystemMessage(
+        content=f"If tool to be called requires tenantId='{tenant_id}', userId='{user_id}', thread_id='{thread_id}', include these in the JSON parameters when invoking the tool. Do not ask the user for them."
+    ))
+
+    response = await summarizer_agent.ainvoke(state, config)
+    return Command(update=response, goto="human")
+
 def human_node(state: MessagesState, config) -> None:
     """
     Human node: Interrupts for user input in interactive mode.
@@ -321,6 +356,32 @@ def human_node(state: MessagesState, config) -> None:
     interrupt(value="Ready for user input.")
     return None
 
+def should_summarize(state: MessagesState, config) -> bool:
+    """
+    Check if conversation should be summarized based on message count.
+    Returns True if there are 10+ messages and no recent summarization.
+    """
+    thread_id = config["configurable"].get("thread_id", "UNKNOWN_THREAD_ID")
+    user_id = config["configurable"].get("userId", "UNKNOWN_USER_ID")
+    tenant_id = config["configurable"].get("tenantId", "UNKNOWN_TENANT_ID")
+
+    try:
+        # Get actual count from DB (non-superseded, non-summary messages only)
+        actual_count = count_active_messages(
+            session_id=thread_id,
+            tenant_id=tenant_id,
+            user_id=user_id
+        )
+
+        # Trigger summarization every 10 messages
+        if actual_count >= 20 and actual_count % 20 == 0:
+            logger.info(f"🎯 Auto-triggering summarization at {actual_count} messages")
+            return True
+
+    except Exception as e:
+        logger.error(f"Error checking message count for summarization: {e}")
+
+    return False
 # define workflow
 async def cleanup_persistent_session():
     """Clean up the persistent MCP session when the application shuts down"""
@@ -342,6 +403,11 @@ def get_active_agent(state: MessagesState, config) -> str:
     thread_id = config["configurable"].get("thread_id", "UNKNOWN_THREAD_ID")
     user_id = config["configurable"].get("userId", "UNKNOWN_USER_ID")
     tenant_id = config["configurable"].get("tenantId", "UNKNOWN_TENANT_ID")
+
+    # **CHECK FOR AUTO-SUMMARIZATION FIRST**
+    if should_summarize(state, config):
+        logger.info("🤖 Auto-routing to summarizer (10+ messages)")
+        return "summarizer"
 
     activeAgent = None
 
@@ -386,10 +452,12 @@ def build_agent_graph():
     builder.add_node("activity", call_activity_agent)
     builder.add_node("dining", call_dining_agent)
     builder.add_node("itinerary_generator", call_itinerary_generator_agent)
+    builder.add_node("summarizer", call_summarizer_agent)
     builder.add_node("human", human_node)
 
     builder.add_edge(START, "orchestrator")
 
+    # Orchestrator routing - can route to any specialized agent
     # Orchestrator routing - can route to any specialized agent
     builder.add_conditional_edges(
         "orchestrator",
@@ -399,6 +467,7 @@ def build_agent_graph():
             "activity": "activity",
             "dining": "dining",
             "itinerary_generator": "itinerary_generator",
+            "summarizer": "summarizer",
             "human": "human",  # Wait for user input
             "orchestrator": "orchestrator",  # fallback
         }
@@ -444,6 +513,16 @@ def build_agent_graph():
         {
             "orchestrator": "orchestrator",
             "itinerary_generator": "itinerary_generator",  # Can stay to handle follow-ups
+        }
+    )
+
+    # Summarizer routing - can only return to orchestrator
+    builder.add_conditional_edges(
+        "summarizer",
+        get_active_agent,
+        {
+            "orchestrator": "orchestrator",
+            "summarizer": "summarizer",  # Can stay in summarizer
         }
     )
 

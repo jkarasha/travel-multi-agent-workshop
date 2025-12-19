@@ -262,6 +262,38 @@ def transfer_to_dining(
         "message": "Transferring to Dining Agent to find restaurants for you."
     })
 
+@mcp.tool()
+def transfer_to_summarizer(
+        reason: str
+) -> str:
+    """
+    Transfer conversation to the Summarizer agent.
+
+    Use this when:
+    - User asks for a recap or summary of the conversation
+    - Conversation has become long (12+ turns)
+    - User wants to review what's been discussed or planned
+
+    Examples:
+    - "Summarize our conversation"
+    - "What have we planned so far?"
+    - "Give me a recap"
+
+    Args:
+        reason: Why you're transferring to this agent
+
+    Returns:
+        JSON with goto field for routing
+    """
+
+    logger.info(f"🔄 Transfer to Summarizer: {reason}")
+
+    return json.dumps({
+        "goto": "summarizer",
+        "reason": reason,
+        "message": "Transferring to Summarizer to compress and recap our conversation."
+    })
+
 # ============================================================================
 # 2. Place Discovery Tools
 # ============================================================================
@@ -950,6 +982,169 @@ def store_resolved_preferences(
             "superseded": superseded,
             "error": str(e)
         }
+
+# ============================================================================
+# 6. Summarization Tools
+# ============================================================================
+
+@mcp.tool()
+def mark_span_summarized(
+        session_id: str,
+        tenant_id: str,
+        user_id: str,
+        summary_text: str,
+        span: Dict[str, str],
+        supersedes: List[str],
+        generate_embedding_flag: bool = True
+) -> Dict[str, Any]:
+    """
+    Atomically create summary and set TTL on source messages.
+
+    Args:
+        session_id: Session identifier
+        tenant_id: Tenant identifier
+        user_id: User identifier
+        summary_text: Summary content
+        span: Dictionary with fromMessageId and toMessageId
+        supersedes: List of message IDs being superseded
+        generate_embedding_flag: Whether to generate embedding (default: True)
+
+    Returns:
+        Dictionary with summaryId and metadata
+    """
+    logger.info(f"📝 Creating summary for session: {session_id}")
+
+    # Get the last message being summarized to extract its timestamp
+    to_message_id = span.get("toMessageId")
+    last_message = get_message_by_id(
+        message_id=to_message_id,
+        session_id=session_id,
+        tenant_id=tenant_id,
+        user_id=user_id
+    )
+
+    # Extract timestamp or fallback to current time
+    if last_message and last_message.get("ts"):
+        last_message_ts = last_message.get("ts")
+    else:
+        from datetime import datetime
+        last_message_ts = datetime.utcnow().isoformat() + "Z"
+        logger.warning(f"Could not find timestamp for message {to_message_id}, using current time")
+
+    summary_id = create_summary(
+        session_id=session_id,
+        tenant_id=tenant_id,
+        user_id=user_id,
+        summary_text=summary_text,
+        span=span,
+        summary_timestamp=last_message_ts,
+        supersedes=supersedes
+    )
+
+    return {
+        "summaryId": summary_id,
+        "supersededCount": len(supersedes),
+        "summaryTimestamp": last_message_ts
+    }
+
+
+@mcp.tool()
+def get_summarizable_span(
+        session_id: str,
+        tenant_id: str,
+        user_id: str,
+        min_messages: int = 20,
+        retention_window: int = 10
+) -> Dict[str, Any]:
+    """
+    Return message range suitable for summarization.
+
+    Args:
+        session_id: Session identifier
+        tenant_id: Tenant identifier
+        user_id: User identifier
+        min_messages: Minimum messages needed for summarization (default: 20)
+        retention_window: Number of recent messages to keep (default: 10)
+
+    Returns:
+        Dictionary with span info and messages
+    """
+    logger.info(f"📊 Finding summarizable span for session: {session_id}")
+
+    # Get all messages (excluding superseded ones)
+    messages = get_session_messages(
+        session_id=session_id,
+        tenant_id=tenant_id,
+        user_id=user_id,
+        include_superseded=False
+    )
+
+    if len(messages) < min_messages:
+        return {
+            "canSummarize": False,
+            "reason": f"Not enough messages (have {len(messages)}, need {min_messages})",
+            "messageCount": len(messages)
+        }
+
+    # Keep recent messages, summarize older ones
+    # Messages are returned in DESC order, so reverse for chronological
+    messages_chronological = list(reversed(messages))
+    messages_to_summarize = messages_chronological[:-retention_window]
+
+    if not messages_to_summarize:
+        return {
+            "canSummarize": False,
+            "reason": "All messages within retention window",
+            "messageCount": len(messages)
+        }
+
+    return {
+        "canSummarize": True,
+        "span": {
+            "fromMessageId": messages_to_summarize[0]["messageId"],
+            "toMessageId": messages_to_summarize[-1]["messageId"]
+        },
+        "messageCount": len(messages_to_summarize),
+        "totalMessages": len(messages),
+        "retentionWindow": retention_window
+    }
+
+
+@mcp.tool()
+def get_all_user_summaries(
+        user_id: str,
+        tenant_id: str
+) -> List[Dict[str, Any]]:
+    """
+    Retrieve all conversation summaries for a user across all sessions.
+    Useful when user asks "Show me my past trips" or "What have we discussed before?".
+
+    Args:
+        user_id: User identifier
+        tenant_id: Tenant identifier
+
+    Returns:
+        List of summary objects containing sessionId, text, and createdAt
+
+    """
+    logger.info(f"📚 Retrieving all summaries for user: {user_id}")
+
+    summaries = get_user_summaries(
+        user_id=user_id,
+        tenant_id=tenant_id
+    )
+
+    # Return simplified format for agent consumption
+    return [
+        {
+            "summaryId": s.get("summaryId"),
+            "sessionId": s.get("sessionId"),
+            "text": s.get("text"),
+            "createdAt": s.get("createdAt"),
+            "span": s.get("span")
+        }
+        for s in summaries
+    ]
 
 # ============================================================================
 # Server Startup
