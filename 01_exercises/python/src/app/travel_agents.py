@@ -125,7 +125,7 @@ async def setup_agents():
     # Orchestrator: Session management + all transfer tools
     orchestrator_tools = filter_tools_by_prefix(all_tools, [
         "create_session", "get_session_context", "append_turn",
-        "extract_preferences_from_message",
+        "extract_preferences_from_message", "resolve_memory_conflicts", "store_resolved_preferences",
         "transfer_to_"  # All transfer tools
     ])
     itinerary_generator_tools = filter_tools_by_prefix(all_tools, [

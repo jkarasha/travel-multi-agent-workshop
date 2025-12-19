@@ -13,16 +13,23 @@ sys.path.insert(0, python_dir)
 
 from src.app.services.azure_cosmos_db import (  # noqa: E402
     create_session_record,
+    create_summary,
+    get_all_user_memories,
+    get_message_by_id,
     get_session_by_id,
     get_session_messages,
     get_session_summaries,
+    get_user_summaries,
     query_memories,
     query_places_hybrid,
     create_trip,
     get_trip,
+    store_memory,
+    supersede_memory,
     trips_container,
     update_memory_last_used
 )
+
 from src.app.services.azure_open_ai import get_openai_client
 
 # Configure logging
@@ -706,6 +713,243 @@ def call_llm_with_prompt(template: str, variables: Dict[str, Any], temperature: 
         content = content.strip()
 
     return content
+
+@mcp.tool()
+def resolve_memory_conflicts(
+        new_preferences: List[Dict[str, Any]],
+        user_id: str,
+        tenant_id: str
+) -> Dict[str, Any]:
+    """
+    Resolve conflicts between new preferences and existing memories using LLM.
+
+    Args:
+        new_preferences: List of new preferences to check
+        user_id: User identifier
+        tenant_id: Tenant identifier
+
+    Returns:
+        Dictionary with:
+        - resolutions: list of resolution decisions for each preference
+          - conflict: bool
+          - conflictsWith: str (existing memory text)
+          - conflictingMemoryId: str
+          - severity: none/low/high
+          - decision: auto-resolve/require-confirmation
+          - strategy: explanation
+          - action: store-new/update-existing/store-both/ask-user
+    """
+    logger.info(f"⚖️  Resolving conflicts for {len(new_preferences)} preferences")
+
+    try:
+        # Query existing memories
+        existing_memories = get_all_user_memories(
+            user_id=user_id,
+            tenant_id=tenant_id
+        )
+
+        # Format existing memories for LLM
+        existing_prefs_text = "\n".join([
+            f"- [{mem.get('type')}] {mem.get('text')} (salience: {mem.get('salience')}, id: {mem.get('memoryId')})"
+            for mem in existing_memories
+        ])
+
+        # Format new preferences for LLM
+        new_prefs_text = json.dumps(new_preferences, indent=2)
+
+        # Load prompty template
+        template = load_prompty_template("memory_conflict_resolution.prompty")
+
+        # Call LLM
+        response_text = call_llm_with_prompt(
+            template=template,
+            variables={
+                "existing_preferences": existing_prefs_text,
+                "new_preferences": new_prefs_text
+            },
+            temperature=0.3
+        )
+
+        # Parse JSON response
+        response_json = json.loads(response_text)
+
+        # Count severity levels
+        high_severity_count = sum(1 for r in response_json.get("resolutions", []) if r.get("severity") == "high")
+        low_severity_count = sum(1 for r in response_json.get("resolutions", []) if r.get("severity") == "low")
+
+        logger.info(f"✅ Conflict resolution complete: {high_severity_count} high, {low_severity_count} low severity")
+
+        return response_json
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse LLM response as JSON: {e}")
+        return {"resolutions": []}
+    except Exception as e:
+        logger.error(f"Error resolving conflicts: {e}")
+        return {"resolutions": []}
+
+@mcp.tool()
+def store_resolved_preferences(
+        resolutions: List[Dict[str, Any]],
+        user_id: str,
+        tenant_id: str,
+        justification: str
+) -> Dict[str, Any]:
+    """
+    Store preferences that have been auto-resolved (no user confirmation needed).
+    Skip preferences that require user confirmation or are duplicates.
+
+    Args:
+        resolutions: List of resolution decisions from resolve_memory_conflicts
+        user_id: User identifier
+        tenant_id: Tenant identifier
+        justification: Source message ID or reasoning
+
+    Returns:
+        Dictionary with:
+        - stored: list of stored memory IDs
+        - skipped: list of preferences that were skipped (duplicates)
+        - needsConfirmation: list of preferences requiring user confirmation
+        - superseded: list of old memory IDs that were marked as superseded
+    """
+    logger.info(f"💾 Storing resolved preferences for user {user_id}")
+
+    stored = []
+    skipped = []
+    needs_confirmation = []
+    superseded = []
+
+    try:
+        for resolution in resolutions:
+            decision = resolution.get("decision")
+            action = resolution.get("action")
+            new_pref = resolution.get("newPreference", {})
+            strategy = resolution.get("strategy")
+
+            if action == "skip" or decision == "skip":
+                skipped.append({
+                    "preference": new_pref,
+                    "reason": resolution.get("strategy", "Duplicate or covered by existing memory")
+                })
+                logger.info(f"⏭️  Skipping duplicate preference: {new_pref.get('text')}")
+                continue
+
+            if decision == "require-confirmation":
+                # Skip and add to confirmation list
+                needs_confirmation.append({
+                    "preference": new_pref,
+                    "conflict": resolution.get("conflictsWith"),
+                    "strategy": strategy
+                })
+                logger.info(f"⏸️  Skipping preference (needs confirmation): {new_pref.get('text')}")
+                continue
+
+            # Auto-resolve actions
+            if action == "store-new":
+                # Before storing, build detailed justification
+                category = new_pref.get("category", "preference")
+                value = new_pref.get("value", "")
+                pref_text = new_pref.get("text", "")
+
+                detailed_justification = f"User stated {category} preference: {value} - {pref_text}"
+                if strategy:
+                    detailed_justification += f" ({strategy})"
+
+                # Store new preference
+                memory_id = store_memory(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    memory_type=new_pref.get("type", "declarative"),
+                    text=new_pref.get("text"),
+                    facets={new_pref.get("category"): {"value": new_pref.get("value")}},
+                    salience=new_pref.get("salience", 0.7),
+                    justification=detailed_justification
+                )
+                stored.append(memory_id)
+                logger.info(f"✅ Stored new preference: {memory_id}")
+
+            elif action == "update-existing":
+                # Build detailed justification before storing
+                category = new_pref.get("category", "preference")
+                value = new_pref.get("value", "")
+                pref_text = new_pref.get("text", "")
+
+                detailed_justification = f"User updated {category} preference: {value} - {pref_text}"
+                if strategy:
+                    detailed_justification += f" ({strategy})"
+
+                # Mark old as superseded and store new
+                old_memory_id = resolution.get("conflictingMemoryId")
+
+                # Store new preference first
+                memory_id = store_memory(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    memory_type=new_pref.get("type", "declarative"),
+                    text=new_pref.get("text"),
+                    facets={new_pref.get("category"): {"value": new_pref.get("value")}},
+                    salience=new_pref.get("salience", 0.7),
+                    justification=detailed_justification
+                )
+                stored.append(memory_id)
+                logger.info(f"✅ Stored updated preference: {memory_id}")
+
+                # Now supersede the old memory
+                if old_memory_id:
+                    success = supersede_memory(
+                        memory_id=old_memory_id,
+                        user_id=user_id,
+                        tenant_id=tenant_id,
+                        superseded_by=memory_id
+                    )
+                    if success:
+                        superseded.append(old_memory_id)
+                        logger.info(f"🔄 Superseded old memory: {old_memory_id} with {memory_id}")
+                    else:
+                        logger.warning(f"⚠️ Failed to supersede old memory: {old_memory_id}")
+
+            elif action == "store-both":
+                # Build detailed justification
+                category = new_pref.get("category", "preference")
+                value = new_pref.get("value", "")
+                pref_text = new_pref.get("text", "")
+
+                detailed_justification = f"User added complementary {category} preference: {value} - {pref_text}"
+                if strategy:
+                    detailed_justification += f" ({strategy})"
+
+                # Store new preference (old one remains)
+                memory_id = store_memory(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    memory_type=new_pref.get("type", "declarative"),
+                    text=new_pref.get("text"),
+                    facets={new_pref.get("category"): {"value": new_pref.get("value")}},
+                    salience=new_pref.get("salience", 0.7),
+                    justification=detailed_justification
+                )
+                stored.append(memory_id)
+                logger.info(f"✅ Stored complementary preference: {memory_id}")
+
+        return {
+            "stored": stored,
+            "skipped": skipped,
+            "needsConfirmation": needs_confirmation,
+            "superseded": superseded,
+            "storedCount": len(stored),
+            "skippedCount": len(skipped),
+            "confirmationCount": len(needs_confirmation)
+        }
+
+    except Exception as e:
+        logger.error(f"Error storing preferences: {e}")
+        return {
+            "stored": stored,
+            "skipped": skipped,
+            "needsConfirmation": needs_confirmation,
+            "superseded": superseded,
+            "error": str(e)
+        }
 
 # ============================================================================
 # Server Startup
