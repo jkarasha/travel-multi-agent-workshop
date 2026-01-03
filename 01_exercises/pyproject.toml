@@ -28,6 +28,7 @@ dependencies = [
     "deprecated==1.2.18",
     "distro==1.9.0",
     "dnspython==2.7.0",
+    "dotenv>=0.9.9",
     "email-validator==2.2.0",
     "fastapi==0.115.7",
     "fastapi-cli==0.0.7",

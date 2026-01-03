@@ -19,6 +19,8 @@ from src.app.services.azure_cosmos_db import patch_active_agent, sessions_contai
 from langgraph_checkpoint_cosmosdb import CosmosDBSaver
 from src.app.services.azure_cosmos_db import count_active_messages, DATABASE_NAME, checkpoint_container
 
+from langsmith import traceable
+
 local_interactive_mode = False
 
 logging.basicConfig(level=logging.INFO)
@@ -190,7 +192,8 @@ async def setup_agents():
         state_modifier=load_prompt("summarizer")
     )
 
-# define functions
+# define 
+@traceable(run_type="llm")
 async def call_orchestrator_agent(state: MessagesState, config) -> Command[Literal["orchestrator", "human"]]:
     """
     Orchestrator agent: Routes requests using transfer_to_ tools.
@@ -239,6 +242,7 @@ async def call_orchestrator_agent(state: MessagesState, config) -> Command[Liter
     response = await orchestrator_agent.ainvoke(state, config)
     return Command(update=response, goto="human")
 
+@traceable(run_type="llm")
 async def call_itinerary_generator_agent(state: MessagesState, config) -> Command[
     Literal["itinerary_generator", "orchestrator", "human"]]:
     """
@@ -262,6 +266,7 @@ async def call_itinerary_generator_agent(state: MessagesState, config) -> Comman
     response = await itinerary_generator_agent.ainvoke(state, config)
     return Command(update=response, goto="human")
 
+@traceable(run_type="llm")
 async def call_hotel_agent(state: MessagesState, config) -> Command[
     Literal["hotel", "itinerary_generator", "orchestrator", "human"]]:
     """
@@ -283,6 +288,7 @@ async def call_hotel_agent(state: MessagesState, config) -> Command[
     response = await hotel_agent.ainvoke(state, config)
     return Command(update=response, goto="human")
 
+@traceable(run_type="llm")
 async def call_activity_agent(state: MessagesState, config) -> Command[
     Literal["activity", "itinerary_generator", "orchestrator", "human"]]:
     """
@@ -304,6 +310,7 @@ async def call_activity_agent(state: MessagesState, config) -> Command[
     response = await activity_agent.ainvoke(state, config)
     return Command(update=response, goto="human")
 
+@traceable(run_type="llm")
 async def call_dining_agent(state: MessagesState, config) -> Command[
     Literal["dining", "itinerary_generator", "orchestrator", "human"]]:
     """
@@ -325,6 +332,7 @@ async def call_dining_agent(state: MessagesState, config) -> Command[
     response = await dining_agent.ainvoke(state, config)
     return Command(update=response, goto="human")
 
+@traceable(run_type="llm")
 async def call_summarizer_agent(state: MessagesState, config) -> Command[
     Literal["summarizer", "orchestrator", "human"]]:
     """

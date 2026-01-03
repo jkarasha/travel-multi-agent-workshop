@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
+from langsmith import traceable
+
 # Add python directory to path so we can import src modules
 current_dir = os.path.dirname(os.path.abspath(__file__))
 python_dir = os.path.join(current_dir, '..', 'python')
@@ -103,6 +105,7 @@ print(f"📋 Authentication mode: {auth_mode.upper()}\n")
 # ============================================================================
 
 @mcp.tool()
+@traceable
 def transfer_to_orchestrator(
     reason: str
 ) -> str:
@@ -135,6 +138,7 @@ def transfer_to_orchestrator(
     })
 
 @mcp.tool()
+@traceable
 def transfer_to_itinerary_generator(
     reason: str
 ) -> str:
@@ -167,6 +171,7 @@ def transfer_to_itinerary_generator(
     })
 
 @mcp.tool()
+@traceable
 def transfer_to_hotel(
         reason: str
 ) -> str:
@@ -199,6 +204,7 @@ def transfer_to_hotel(
     })
 
 @mcp.tool()
+@traceable
 def transfer_to_activity(
         reason: str
 ) -> str:
@@ -231,6 +237,7 @@ def transfer_to_activity(
     })
 
 @mcp.tool()
+@traceable
 def transfer_to_dining(
         reason: str
 ) -> str:
@@ -263,6 +270,7 @@ def transfer_to_dining(
     })
 
 @mcp.tool()
+@traceable
 def transfer_to_summarizer(
         reason: str
 ) -> str:
@@ -299,6 +307,7 @@ def transfer_to_summarizer(
 # ============================================================================
 
 @mcp.tool()
+@traceable
 def discover_places(
         geo_scope: str,
         query: str,
@@ -429,6 +438,7 @@ def discover_places(
 # ============================================================================
 
 @mcp.tool()
+@traceable
 def create_new_trip(
         user_id: str,
         tenant_id: str,
@@ -477,6 +487,7 @@ def create_new_trip(
     }
 
 @mcp.tool()
+@traceable
 def get_trip_details(
         trip_id: str,
         user_id: str,
@@ -497,6 +508,7 @@ def get_trip_details(
     return get_trip(trip_id, user_id, tenant_id)
 
 @mcp.tool()
+@traceable
 def update_trip(
         trip_id: str,
         user_id: str,
@@ -536,6 +548,7 @@ def update_trip(
 # ============================================================================
 
 @mcp.tool()
+@traceable
 def create_session(
         user_id: str,
         tenant_id: str = "",
@@ -564,6 +577,7 @@ def create_session(
     }
 
 @mcp.tool()
+@traceable
 def get_session_context(
         session_id: str,
         tenant_id: str,
@@ -605,6 +619,7 @@ def get_session_context(
 # ============================================================================
 
 @mcp.tool()
+@traceable
 def recall_memories(
     user_id: str,
     tenant_id: str,
@@ -635,6 +650,7 @@ def recall_memories(
     return memories
 
 @mcp.tool()
+@traceable
 def extract_preferences_from_message(
         message: str,
         role: str,
@@ -747,6 +763,7 @@ def call_llm_with_prompt(template: str, variables: Dict[str, Any], temperature: 
     return content
 
 @mcp.tool()
+@traceable
 def resolve_memory_conflicts(
         new_preferences: List[Dict[str, Any]],
         user_id: str,
@@ -821,6 +838,7 @@ def resolve_memory_conflicts(
         return {"resolutions": []}
 
 @mcp.tool()
+@traceable
 def store_resolved_preferences(
         resolutions: List[Dict[str, Any]],
         user_id: str,
@@ -988,6 +1006,7 @@ def store_resolved_preferences(
 # ============================================================================
 
 @mcp.tool()
+@traceable
 def mark_span_summarized(
         session_id: str,
         tenant_id: str,
@@ -1047,8 +1066,8 @@ def mark_span_summarized(
         "summaryTimestamp": last_message_ts
     }
 
-
 @mcp.tool()
+@traceable
 def get_summarizable_span(
         session_id: str,
         tenant_id: str,
@@ -1111,6 +1130,7 @@ def get_summarizable_span(
 
 
 @mcp.tool()
+@traceable
 def get_all_user_summaries(
         user_id: str,
         tenant_id: str
