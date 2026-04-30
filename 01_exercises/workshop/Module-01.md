@@ -22,17 +22,24 @@ In this Module, you'll implement your first agent as part of a multi-agent trave
 
 This solution is organized in the folders below:
 
-**Skip the below two commands if you have your visual studio code opened already in the project directory**
+**Skip the below commands if you have Visual Studio Code opened already in the project directory**
 
-Open PowerShell and navigate to the workshop **\multi-agent-workshop\01_exercises** directory:
+Navigate to the workshop directory:
 
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises
+```
+
+**Windows (PowerShell):**
 ```powershell
-cd multi-agent-workshop\01_exercises
+cd ~\travel-multi-agent-workshop\01_exercises
 ```
 
 Open Visual Studio Code with our project loaded:
 
-```powershell
+**macOS/Linux/Windows:**
+```bash
 code .
 ```
 
@@ -858,13 +865,17 @@ builder.add_node("itinerary_generator", call_itinerary_generator_agent)
 
 With the activities in this module complete, it is time to test your work!
 
-To do this, we are going to enable two ways of testing our application.
+In this section, you'll:
+1. Add a test function to your code for optional CLI testing
+2. Wire up the API layer to connect the frontend to your agents
+3. Start all required services (MCP server, backend API, frontend)
+4. Test the complete system through the web interface
 
-First, we are going to add code to our **travel_agents.py** file.This code defines a new function, **interactive_chat()** that creates a message loop that invokes our StateGraph that we have defined in this file.
+### Step 1: Add Interactive Testing Function (Optional)
 
-To begin, navigate to the end of the **travel_agents.py** file.
+First, let's add a function that allows command-line testing of your agents. While you'll primarily use the web frontend, this function is useful for debugging.
 
-Then paste the following code below all code in this file:
+Navigate to the end of the **travel_agents.py** file and paste the following code:
 
 ```python
 async def interactive_chat():
@@ -923,84 +934,29 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-For the rest of the lab, we're going to be testing using the front end by wiring up the API layer, so you can skip to that section below. But for reference, if you wanted bypass the front end and test the backend in a command line fashion, you could run the below:
+> **Note**: This function enables CLI-based testing. For this workshop, we'll use the web frontend instead, which provides a better user experience. However, the CLI testing function is included for debugging purposes.
 
-**First, navigate to the python directory and activate your virtual environment:**
+### Step 2: Wire up the API Layer
 
-**Linux/Mac/WSL/Codespaces:**
+Now let's connect your agents to the frontend by enabling the API endpoints.
 
-```bash
-cd multi-agent-workshop/01_exercises/python
-source ../venv/bin/activate
-```
+The travel assistant uses a **FastAPI** backend that exposes REST endpoints for the Angular frontend. Let's enable the agent integration.
 
-**Windows (PowerShell):**
+Navigate to the **travel_agents_api.py** file.
 
-```powershell
-cd multi-agent-workshop\01_exercises\python
-..\venv\Scripts\Activate.ps1
-```
-
-To test your travel agent system, you need to start two components in separate terminal windows:
-
-1. **MCP Server** - Provides the tools and capabilities for the agents
-2. **Travel Agents Application** - Runs the multi-agent system
-
-#### Step 1: Start the MCP Server
-
-In the **terminal window** opened, run the following commands:
-
-> **Important**: Always ensure your virtual environment is activated before starting any server!
-
-```powershell
-cd mcp_server
-$env:PYTHONPATH="../python"; python mcp_http_server.py
-```
-
-You should see output similar to:
-
-```shell
-🔐 Authentication Configuration:
-   Simple Token: SET
-   Base URL: http://localhost:8080
-✅ SIMPLE TOKEN MODE ENABLED (Development)
-   Token: travel-s...
-
-🚀 Initializing Travel Assistant MCP Server...
-✅ Travel Assistant MCP server initialized
-🌐 Server will be available at: http://0.0.0.0:8080
-📋 Authentication mode: SIMPLE_TOKEN
-
-Starting Travel Assistant MCP server...
-🔓 Starting server without built-in authentication...
-💡 For OAuth, use a reverse proxy like nginx or API gateway
-INFO:     Started server process [6504]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-```
-
-### Wiring up the API layer
-
-Now let's set up the API layer so that the front end can talk properly to your new agents.
-
-The travel assistant uses a **FastAPI** backend that exposes REST endpoints for the Angular frontend. The API layer acts as a bridge between the web interface and your LangGraph multi-agent system.
-
-Navigate to the **travel_agents_api.py** file:
-
-First, locate this line and uncomment it:
+**First**, locate this line near the top of the file and uncomment it:
 
 ```python
 #from src.app.travel_agents import setup_agents, build_agent_graph, cleanup_persistent_session
 ```
 
-Next, find the following two commented out functions and uncomment them:
+**Next**, find the following three commented-out functions and uncomment them:
 
-- **initialize_agents**
-- **ensure_agents_initialized**
-- **shutdown_event**
+- `initialize_agents()` - Initializes agents on server startup
+- `ensure_agents_initialized()` - Ensures agents are ready before processing requests  
+- `shutdown_event()` - Cleans up resources on server shutdown
 
-Lastly, find the below code, comment it out, and uncomment the fully implemented version below it.
+**Finally**, find the stub chat completion endpoint and replace it with the full implementation:
 
 ```python
 @app.post(
@@ -1038,100 +994,126 @@ async def get_chat_completion(
     ]
 ```
 
-You need to have **three components** running simultaneously:
+### Step 3: Start All Required Services
 
-1. **MCP Server** (should already be running from previous steps)
-2. **Backend API** (should still be running from module 00, but if not, we'll restart it)
-3. **Frontend** (we'll start this next)
+You need **three components** running simultaneously:
+
+| Component | Port | Purpose |
+|-----------|------|----|
+| **MCP Server** | 8080 | Provides tools for agents |
+| **Backend API** | 8000 | FastAPI server with agent logic |
+| **Frontend** | 4200 | Angular web interface |
+
+#### Start the MCP Server
+
+Open a **new terminal window** and start the MCP server:
+
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises
+source .venv-travel/bin/activate
+cd mcp_server
+export PYTHONPATH="../python"
+python mcp_http_server.py
+```
+
+**Windows (PowerShell):**
+```powershell
+cd ~\travel-multi-agent-workshop\01_exercises
+.\.venv-travel\Scripts\Activate.ps1
+cd mcp_server
+$env:PYTHONPATH="../python"
+python mcp_http_server.py
+```
+
+You should see:
+```
+🔐 Authentication Configuration:
+   Simple Token: SET
+✅ SIMPLE TOKEN MODE ENABLED (Development)
+🚀 Initializing Travel Assistant MCP Server...
+INFO:     Uvicorn running on http://0.0.0.0:8080
+```
+
+> **Keep this terminal running** - The MCP server must stay active.
 
 #### Start the Backend API Server
 
-The backend API server should still be running from when you started it in a terminal in Module 00. You also started it with **--reload**, so it should automatically restart on code changes (you should see warnings like "WatchFiles detected changes"). Check if it is still running. If it's not running, or you prefer to restart a fresh instance, open a **new terminal window** (keep the MCP server running) and execute:
+The backend API should still be running from Module 00 with `--reload`, so it automatically restarts when you save code changes. 
 
-> **Important**: Always ensure your virtual environment is activated before starting the server!
+**If it's NOT running**, open a **new terminal window** and start it:
 
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises
+source .venv-travel/bin/activate
+cd python/src/app
+uvicorn travel_agents_api:app --reload --host 0.0.0.0 --port 8000
+```
 
+**Windows (PowerShell):**
 ```powershell
-cd multi-agent-workshop\01_exercises
-.\venv\Scripts\Activate.ps1
-cd python
-uvicorn src.app.travel_agents_api:app --reload --host 0.0.0.0 --port 8000
+cd ~\travel-multi-agent-workshop\01_exercises
+.\.venv-travel\Scripts\Activate.ps1
+cd python\src\app
+uvicorn travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
-You should see output similar to:
-
-```shell
-✅ Loaded .env from: /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/.env
-INFO:     Started server process [98100]
-INFO:     Waiting for application startup.
-INFO:src.app.travel_agents_api:🚀 Starting agent initialization with retry logic...
-INFO:src.app.travel_agents_api:Attempt 1/5: Initializing agents...
-INFO:src.app.travel_agents:🚀 Starting Travel Assistant MCP client...
-INFO:src.app.travel_agents:🔐 Client Authentication Configuration:
-INFO:src.app.travel_agents:   Simple Token: SET
-INFO:src.app.travel_agents:   Mode: Simple Token (Development)
-INFO:src.app.travel_agents:   - Transport: streamable_http
-INFO:src.app.travel_agents:   - Server URL: http://localhost:8080/mcp/
-INFO:src.app.travel_agents:   - Authentication: SIMPLE_TOKEN
-INFO:src.app.travel_agents:   - Status: Ready to connect
-
-INFO:src.app.travel_agents:🔐 Added Bearer token authentication to client
-INFO:src.app.travel_agents:✅ MCP Client initialized successfully
-INFO:src.app.travel_agents:[DEBUG] All tools registered from Travel Assistant MCP server:
-INFO:src.app.travel_agents:  - transfer_to_orchestrator
-INFO:src.app.travel_agents:  - transfer_to_itinerary_generator
-INFO:src.app.travel_agents:Loading prompt for orchestrator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/orchestrator.prompty
-INFO:src.app.travel_agents:Loading prompt for itinerary_generator from /Users/aayushkataria/git/multi-agent-workshop/01_exercises/python/src/app/prompts/itinerary_generator.prompty
-INFO:src.app.travel_agents:🏗️  Building multi-agent graph...
-INFO:src.app.travel_agents_api:✅ Agents initialized successfully!
-INFO:     Application startup complete.
+You should see:
+```
+✓ Loaded .env from: ...
+INFO: 🚀 Starting agent initialization...
+INFO: ✅ MCP Client initialized successfully
+INFO: [DEBUG] All tools registered:
+INFO:   - transfer_to_orchestrator
+INFO:   - transfer_to_itinerary_generator
+INFO: Loading prompt for orchestrator...
+INFO: Loading prompt for itinerary_generator...
+INFO: 🏗️ Building multi-agent graph...
+INFO: ✅ Agents initialized successfully!
+INFO: Application startup complete.
+INFO: Uvicorn running on http://0.0.0.0:8000
 ```
 
-The API server is now running on http://localhost:8000
+> **Keep this terminal running** - The API server must stay active.
 
 #### Start the Frontend Application
 
-Your frontend should already be started from Module 00. If you closed it, open a **new terminal window** and execute:
+Your frontend should already be running from Module 00. **If you closed it**, open a **new terminal window**:
 
-> **Note**: The frontend doesn't require virtual environment activation since it uses Node.js, not Python.
+> **Note**: The frontend uses Node.js, so no Python virtual environment is needed.
 
-
-```powershell
-cd multi-agent-workshop\01_exercises\frontend
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises/frontend
 npm install  # Only needed first time or when dependencies change
 npm start
 ```
 
-You should see output similar to:
-
-```shell
-> cosmos-voyager-frontend@1.0.0 start
-> ng serve --proxy-config proxy.conf.json
-
-Application bundle generation complete. [6.281 seconds]
-
-Watch mode enabled. Watching for file changes...
-NOTE: Raw file sizes do not reflect development server per-request transformations.
-  ➜  Local:   http://localhost:4200/
-  ➜  press h + enter to show help
-
+**Windows (PowerShell):**
+```powershell
+cd ~\travel-multi-agent-workshop\01_exercises\frontend
+npm install  # Only needed first time or when dependencies change
+npm start
 ```
 
-#### Verify Everything is Running
+You should see:
+```
+> ng serve --proxy-config proxy.conf.json
 
-You should now have **four terminals** with these processes:
+Application bundle generation complete.
+  ➜  Local:   http://localhost:4200/
+```
 
-| Terminal | Component   | Port | Command                                       |
-|----------|-------------|------|-----------------------------------------------|
-| 1        | MCP Server  | 8080 | **python mcp_server/mcp_http_server.py**      |
-| 2        | Backend API | 8000 | **uvicorn src.app.travel_agents_api:app ...** |
-| 3        | Frontend    | 4200 | **npm start**                                 |
+> **Keep this terminal running** - The frontend must stay active.
 
-### Start a Conversation
+### Step 4: Test the Complete System
 
-1. Return to the frontend app in your browser and hit refresh. If you closed it, open a new tab and navigate to <http://localhost:4200/>.
-2. In the Login dialog, select a user and click, Login. You will be presented with a dashboard that looks like the below, where you can initiate a chat, by opening the Chat with Assistant window.
-3. Let's chat with the agent now.
+1. **Open your browser** and navigate to http://localhost:4200
+2. **Select a user** from the login dropdown (e.g., Tony Stark)
+3. **Click Login** to access the dashboard
+4. **Click "Chat with Assistant"** to open the chat interface
+5. **Start a conversation** with your agent:
 
 ```text
 Hi, I need some help.
@@ -1147,33 +1129,114 @@ Note: Responses can vary from run to run because these models aren’t fully det
 
 Your implementation is successful if:
 
-- [ ] Your app compiles with no warnings or errors.
-- [ ] Your agent successfully processes user input and generates and appropriate response.
+✅ **All three services start without errors**
+- [ ] MCP Server running on port 8080
+- [ ] Backend API running on port 8000  
+- [ ] Frontend accessible at http://localhost:4200
 
-## Common Issue and Troubleshooting
+✅ **Agent initialization succeeds**
+- [ ] Backend terminal shows "Agents initialized successfully"
+- [ ] You see tools loaded: `transfer_to_orchestrator`, `transfer_to_itinerary_generator`
+- [ ] No authentication or connection errors
 
-**Issue: Frontend can't connect to backend**
+✅ **Frontend connects to backend**
+- [ ] Login page displays available users
+- [ ] Chat interface opens successfully
+- [ ] Messages send without errors
 
-- Verify backend API is running on port 8000
-- Check **frontend/proxy.conf.json** has correct API proxy configuration
-- Look for CORS errors in browser console
+✅ **Agents respond correctly**
+- [ ] Orchestrator greets users and asks clarifying questions
+- [ ] Orchestrator correctly routes itinerary requests
+- [ ] Itinerary generator creates detailed day-by-day plans
+- [ ] Agent transfers appear in backend logs
 
-**Issue: Backend can't connect to MCP server**
+## Common Issues and Troubleshooting
 
-- Verify MCP server is running on port 8080
-- Check **.env** file has **MCP_SERVER_BASE_URL=http://localhost:8080**
-- Verify **MCP_AUTH_TOKEN** is set correctly
+### Issue: "Agents not initialized" error
 
-**Issue: npm install fails**
+**Symptoms**: Backend API returns 503 errors, frontend shows connection errors
 
-- Ensure Node.js version 18+ is installed: **node --version**
-- Clear npm cache: **npm cache clean --force**
-- Delete **node_modules** and **package-lock.json**, then retry
+**Solutions**:
+1. Verify MCP server is running on port 8080
+2. Check `.env` file has correct `MCP_SERVER_BASE_URL=http://localhost:8080`
+3. Verify `MCP_AUTH_TOKEN` is set in `.env`
+4. Restart backend API server
+5. Check backend logs for specific initialization errors
 
-**Issue: Port already in use**
+### Issue: Frontend shows "NO USERS" in dropdown
 
-- Find process using port: **lsof -i :8000** (macOS/Linux) or **netstat -ano | findstr :8000** (Windows)
-- Kill the process or use a different port
+**Symptoms**: Login page loads but user dropdown is empty
+
+**Solutions**:
+1. Verify you're logged into Azure CLI with correct tenant:
+   ```bash
+   # macOS/Linux
+   az login --tenant <TENANT_ID>
+   
+   # Windows
+   az login --tenant <TENANT_ID>
+   ```
+2. Verify `.env` file has correct `COSMOS_ENDPOINT`
+3. Check backend logs for Cosmos DB authentication errors
+4. Restart backend API after fixing authentication
+
+### Issue: Backend can't connect to Cosmos DB
+
+**Symptoms**: Backend logs show authentication errors for Cosmos DB
+
+**Solutions**:
+1. Use `az login` (NOT `azd auth login`) with correct tenant
+2. Verify you have proper permissions on the Cosmos DB account
+3. Check `.env` file has correct `COSMOS_ENDPOINT`
+4. On Windows, ensure environment variables are loaded (see Module 00)
+
+### Issue: Port already in use
+
+**Symptoms**: Server fails to start with "Address already in use" error
+
+**Solutions**:
+
+**macOS/Linux:**
+```bash
+# Find process using port
+lsof -i :8000
+# Kill the process
+kill -9 <PID>
+```
+
+**Windows:**
+```powershell
+# Find process using port  
+netstat -ano | findstr :8000
+# Kill the process
+taskkill /PID <PID> /F
+```
+
+### Issue: Frontend proxy not working
+
+**Symptoms**: Frontend can't reach backend API
+
+**Solutions**:
+1. Verify `frontend/proxy.conf.json` has correct configuration
+2. Check backend is running on `http://localhost:8000`
+3. Restart frontend: Stop (`Ctrl+C`) and run `npm start` again
+4. Check browser console for CORS errors
+
+### Issue: npm install fails
+
+**Symptoms**: Frontend dependencies won't install
+
+**Solutions**:
+```bash
+# Check Node.js version (need 18+)
+node --version
+
+# Clear cache and retry
+npm cache clean --force
+rm -rf node_modules package-lock.json  # macOS/Linux
+Remove-Item -Recurse -Force node_modules, package-lock.json  # Windows
+npm install
+```
 
 ## Module Solution
 

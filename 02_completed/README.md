@@ -8,6 +8,8 @@ This complete solution demonstrates the final result of the workshop with all mo
 
 Deploy the complete solution 👉  **[Deploy to Azure](../README.md#deployment-instructions-for-complete-solution-02_completed)**
 
+📖 **[User Guide](./USER_GUIDE.md)** — how to use the travel assistant, interact with agents, manage memories, and get the best results.
+
 ## Project Structure
 
 ```

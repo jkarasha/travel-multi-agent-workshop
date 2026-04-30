@@ -77,15 +77,21 @@ hooks:
         echo "═══════════════════════════════════════════════════════════════"
         echo ""
 
+        VENV_DIR=".venv-travel"
+
         # Check if virtual environment exists, create if not
-        if [ ! -d "venv" ]; then
-            echo "Creating Python virtual environment..."
-            python3 -m venv venv
+        if [ ! -d "$VENV_DIR" ]; then
+            echo "Creating Python virtual environment with python3.11..."
+            python3.11 -m venv "$VENV_DIR" 2>/dev/null || python3 -m venv "$VENV_DIR"
         fi
 
         # Activate virtual environment
         echo "Activating virtual environment..."
-        . venv/bin/activate
+        . "$VENV_DIR/bin/activate"
+
+        # Verify Python version
+        ACTIVE_PYTHON_VERSION=$(python --version 2>&1)
+        echo "Active Python version: $ACTIVE_PYTHON_VERSION"
 
         # Install requirements
         echo "Installing Python dependencies from requirements.txt..."
@@ -156,66 +162,38 @@ hooks:
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host ""
 
-        # Check if virtual environment exists, create if not
-        if (-not (Test-Path "venv")) {
+        $venvDir = ".venv-travel"
+
+        if (-not (Test-Path $venvDir)) {
             Write-Host "Creating Python virtual environment..."
-            python -m venv venv
+            py -3.11 -m venv $venvDir 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                py -3 -m venv $venvDir
+            }
         }
 
-        # Activate virtual environment
         Write-Host "Activating virtual environment..."
-        & ".\venv\Scripts\Activate.ps1"
+        & ".\$venvDir\Scripts\Activate.ps1"
 
-        # Install requirements
+        $activePythonVersion = python --version 2>&1
+        Write-Host "Active Python version: $activePythonVersion"
+
         Write-Host "Installing Python dependencies from requirements.txt..."
         if (Test-Path "requirements.txt") {
             python -m pip install --upgrade pip setuptools wheel
             python -m pip install --prefer-binary -r requirements.txt
-        } else {
-            Write-Host "⚠️  requirements.txt not found, installing basic dependencies..."
-            python -m pip install --upgrade pip setuptools wheel
-            python -m pip install azure-cosmos azure-identity openai python-dotenv
         }
 
         Write-Host ""
         Write-Host "═══════════════════════════════════════════════════════════════"
-        Write-Host "� Loading data into Cosmos DB..."
+        Write-Host "📊 Loading data into Cosmos DB..."
         Write-Host "═══════════════════════════════════════════════════════════════"
         Write-Host ""
 
-        # Data seeding with error handling
-        if (-not (Test-Path "python")) {
-            Write-Host "⚠️  WARNING: python directory not found!" -ForegroundColor Yellow
-            Write-Host "Skipping data seed - you'll need to run it manually later" -ForegroundColor Yellow
-        } elseif (-not (Test-Path "python\data\seed_data.py")) {
-            Write-Host "⚠️  WARNING: seed_data.py not found!" -ForegroundColor Yellow
-            Write-Host "Skipping data seed - you'll need to run it manually later" -ForegroundColor Yellow
-        } else {
-            try {
-                Push-Location python
-                Write-Host "Running seed_data.py..." -ForegroundColor Cyan
-                
-                # Capture output and errors
-                $output = python data\seed_data.py 2>&1
-                $exitCode = $LASTEXITCODE
-                
-                # Display output
-                $output | ForEach-Object { Write-Host $_ }
-                
-                if ($exitCode -eq 0) {
-                    Write-Host "✅ Data seeded successfully!" -ForegroundColor Green
-                } else {
-                    Write-Host "⚠️  WARNING: seed_data.py returned exit code $exitCode" -ForegroundColor Yellow
-                    Write-Host "This might mean data already exists (which is OK) or there was an error." -ForegroundColor Yellow
-                    Write-Host "Check the output above for details." -ForegroundColor Yellow
-                }
-            } catch {
-                Write-Host "⚠️  WARNING: Failed to run seed_data.py" -ForegroundColor Yellow
-                Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Yellow
-                Write-Host "You may need to run it manually later." -ForegroundColor Yellow
-            } finally {
-                Pop-Location
-            }
+        if (Test-Path "python\data\seed_data.py") {
+            Push-Location python
+            python data\seed_data.py
+            Pop-Location
         }
 
         Write-Host ""

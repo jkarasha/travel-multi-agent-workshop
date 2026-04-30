@@ -62,7 +62,7 @@ from src.app.services.azure_cosmos_db import (
     memories_container, places_container, debug_logs_container, get_checkpoint_saver,
     create_session_record, get_session_by_id,
     append_message, get_session_messages, query_places_hybrid,
-    get_trip, query_memories, query_places_with_theme, query_places_filtered,
+    get_trip, query_memories, get_all_user_memories, query_places_with_theme, query_places_filtered,
     patch_active_agent, update_session_activity,
     create_user, get_all_users, get_user_by_id,
     store_debug_log, get_debug_log, query_debug_logs
@@ -124,12 +124,13 @@ class Trip(BaseModel):
     tripId: str
     userId: str
     tenantId: str
-    scope: Dict[str, str]  # {"type": "city", "id": "rome"}
-    dates: Dict[str, str]  # {"start": "2024-06-01", "end": "2024-06-04"}
-    travelers: List[str]
-    constraints: Dict[str, Any]  # {"budgetTier": 2}
+    destination: str  # "Paris, France"
+    startDate: str  # "2025-11-15"
+    endDate: str  # "2025-11-19"
+    tripDuration: Optional[int] = None
     days: List[Dict] = []  # Day-by-day itinerary
     status: str = TripStatus.PLANNING
+    createdAt: Optional[str] = None
 
 
 class MemoryType(str, Enum):
@@ -1112,7 +1113,7 @@ def get_user_trips(tenantId: str, userId: str):
                 FROM c
                 WHERE c.tenantId = @tenantId
                   AND c.userId = @userId
-                ORDER BY c.dates.start DESC \
+                ORDER BY c.startDate DESC \
                 """
 
         items = list(trips_container.query_items(
@@ -1270,12 +1271,9 @@ def get_user_memories(
         List of Memory objects
     """
     try:
-        memory_types = [memoryType] if memoryType else None
-        memories = query_memories(
+        memories = get_all_user_memories(
             user_id=userId,
-            tenant_id=tenantId,
-            memory_types=memory_types,
-            min_salience=minSalience
+            tenant_id=tenantId
         )
 
         return [Memory(**mem) for mem in memories]
@@ -1328,45 +1326,47 @@ def delete_memory(tenantId: str, userId: str, memoryId: str):
     "/places/search",
     tags=[PLACES_TAG],
     summary="Search Places",
-    description="Vector search with optional filters (type, price, dietary, accessibility, tags) - useful for theme-based searches",
+    description="Hybrid search (full-text + vector) with optional filters (type, price, dietary, accessibility) - useful for theme-based searches",
     response_model=List[Place]
 )
 def search_places(search_request: PlaceSearchRequest):
     """
-    Search for hotels, restaurants, or attractions using vector similarity.
+    Search for hotels, restaurants, or attractions using hybrid RRF search.
 
-    This endpoint uses semantic search with optional filters for type, price tier,
-    dietary options, accessibility features, and tags.
+    This endpoint uses hybrid search (full-text + vector) with optional filters
+    for type, price tier, dietary options, and accessibility features.
 
     Args:
         search_request: PlaceSearchRequest with search parameters and optional filters
 
     Returns:
-        List of Place objects matching the search criteria (top 5 by vector similarity)
+        List of Place objects matching the search criteria
     """
     try:
-        # Generate embedding for query
-        vectors = generate_embedding(search_request.query)
-
         # Extract filters
-        place_type = search_request.filters.get("type") if search_request.filters else None
-        price_tier = search_request.filters.get("priceTier") if search_request.filters else None
-        dietary = search_request.filters.get("dietary") if search_request.filters else None
-        accessibility = search_request.filters.get("accessibility") if search_request.filters else None
-        tags = search_request.filters.get("tags") if search_request.filters else None
+        filters = search_request.filters or {}
+        place_type = filters.get("type")
+        price_tier = filters.get("priceTier")
+        dietary = filters.get("dietary")
+        accessibility = filters.get("accessibility")
+
+        # Coerce to lists (query_places_hybrid expects List[str])
+        if dietary and not isinstance(dietary, list):
+            dietary = [dietary]
+        if accessibility and not isinstance(accessibility, list):
+            accessibility = [accessibility]
 
         logger.info(
-            f"🔍 search_places called with filters: type={place_type}, priceTier={price_tier}, dietary={dietary}, accessibility={accessibility}, tags={tags}")
+            f"🔍 search_places called with filters: type={place_type}, priceTier={price_tier}, dietary={dietary}, accessibility={accessibility}")
 
-        # Query places with all filters
+        # Call query_places_hybrid with the correct parameters
         places = query_places_hybrid(
-            vectors=vectors,
+            query=search_request.query,
             geo_scope_id=search_request.geoScope.lower(),
             place_type=place_type,
             price_tier=price_tier,
             dietary=dietary,
-            accessibility=accessibility,
-            tags=tags
+            accessibility=accessibility
         )
 
         return [Place(**place) for place in places]

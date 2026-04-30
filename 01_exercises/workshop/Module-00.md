@@ -8,8 +8,9 @@ Welcome to the Travel Assistant Multi-Agent Workshop! In this module, you'll set
 
 ## Learning Objectives
 
-- Set up a Python virtual environment
-- Seed Cosmos DB with initial data (users, places, and memories)
+- Configure Azure authentication and environment settings
+- Provision Azure resources using Azure Developer CLI (azd)
+- Verify deployed resources in the Azure Portal
 - Start the API server using Uvicorn
 - Launch the frontend Angular application
 - Verify data in Cosmos DB containers
@@ -17,92 +18,285 @@ Welcome to the Travel Assistant Multi-Agent Workshop! In this module, you'll set
 
 ## Module Exercises
 
-1. [Activity 1: Verify the resources in Azure Portal](#activity-1-verify-the-resources-in-azure-portal)
-2. [Activity 2: Set Up Your Development Environment](#activity-2-set-up-your-development-environment)
+1. [Activity 1: Set Up Azure Resources](#activity-1-set-up-azure-resources)
+2. [Activity 2: Verify Resources in Azure Portal](#activity-2-verify-resources-in-azure-portal)
 3. [Activity 3: Start the API Server](#activity-3-start-the-api-server)
 4. [Activity 4: Launch the Frontend](#activity-4-launch-the-frontend)
 5. [Activity 5: Verify Your Setup](#activity-5-verify-your-setup)
 
 ---
 
-## Activity 1: Verify the resources in Azure Portal
+## Activity 1: Set Up Azure Resources
 
-Verify the resources are correctly deployed in the Azure Portal
+In this activity, you'll use the Azure Developer CLI (azd) to authenticate, configure your environment, and provision all required Azure resources for the workshop.
 
-- Open a browser locally on the VM and navigate to +++https://portal.azure.com+++ 
-- Login using the credentials below 
-- User name +++@lab.CloudPortalCredential(User1).Username+++ 
-- Temporary Access Pass +++@lab.CloudPortalCredential(User1).AccessToken+++ 
-- In the Search box at the top of the Azure Portal, type in `resource group`. Open the Resource groups blade 
-- Open the resource group that starts with: rg-agentworkshop-. 
-- If the resource group does not appear wait a few moments then refresh. 
-- When the new resource group appears, expand the Overview tab and click deployments.
+### Prerequisites
 
-![Testing_1](./media/Module-00/Test-1.png)
+Before you begin, ensure you have:
 
-- If all resources have been deployed successfully, you are ready to begin the lab. Your screen should look like this.
+- Azure subscription with appropriate permissions to create resources
+- Azure tenant ID and subscription ID
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) installed
+- Python 3.11 or higher installed
+- Node.js 18 or higher installed
 
-![Testing 2](./media/Module-00/Test-2.png)
+### Step 1: Get the repository and Navigate to the Workshop Directory
 
-- Leave this browser open to the Azure Portal.
+Open your terminal and Clone the Repository.
 
-## Activity 2: Set Up Your Development Environment
-
-### Step 1: Navigate to the Workshop Directory
-
-Open PowerShell and navigate to the workshop **\multi-agent-workshop\01_exercises** directory:
-
-```powershell
-cd multi-agent-workshop\01_exercises
+```bash
+git clone https://github.com/AzureCosmosDB/travel-multi-agent-workshop.git
 ```
 
-### Step 2: Activate the Virtual Environment
+Navigate to the workshop directory:
 
-Activate the virtual environment using PowerShell:
-
-```powershell
-.\venv\Scripts\Activate.ps1
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises
 ```
 
-You should see **(venv)** appear in your terminal prompt, indicating the virtual environment is active.
-
-> **Note:** If you encounter an execution policy error, run PowerShell as Administrator and execute:
->
-> ```powershell
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-> ```
-
-### Step 3: Open Visual Studio Code with our project loaded:
-
+**Windows (PowerShell):**
 ```powershell
+cd ~\travel-multi-agent-workshop\01_exercises
+```
+
+### Step 2: Configure Azure Authentication
+
+First, ensure you're logged out of any previous Azure sessions, then log in with your workshop credentials:
+
+```bash
+azd auth logout
+azd auth login --tenant-id <TENANT_ID>
+```
+
+Replace `<TENANT_ID>` with your Azure tenant ID.
+
+> **Note:** A browser window will open for authentication. Complete the sign-in process.
+
+### Step 3: Set Environment Variables
+
+**MacOS**
+
+Configure your Azure subscription and tenant ID:
+
+```bash
+azd env set AZURE_SUBSCRIPTION_ID <SUBSCRIPTION_ID>
+azd env set AZURE_TENANT_ID <TENANT_ID>
+```
+
+Replace:
+- `<SUBSCRIPTION_ID>` with your Azure subscription ID
+- `<TENANT_ID>` with your Azure tenant ID
+
+You'll be prompted for:
+
+1. **Environment name**: Enter a unique name (e.g., `alias-travel`)
+   - Use lowercase letters, numbers, and hyphens only
+   - Must be globally unique
+
+
+**Windows**
+
+```bash
+az logout
+az login --tenant <TENANT_ID>
+```
+
+### Step 4: Navigate to Infrastructure Directory
+
+Navigate to the infrastructure directory:
+
+**macOS/Linux:**
+```bash
+cd infra
+```
+
+**Windows (PowerShell):**
+```powershell
+cd infra
+```
+
+### Step 5: Provision Azure Resources
+
+Now, provision all required Azure resources:
+
+```bash
+azd up
+```
+
+You'll be prompted for:
+
+1cd ... **Azure location**: Select a region (e.g., `eastus`, `westus2`, `westeurope`)
+   - Choose a region close to you for better performance
+
+### What Happens During Provisioning?
+
+The `azd up` command will:
+
+✅ Create an Azure resource group: rg-`EnvironmentName`  
+✅ Deploy Azure Cosmos DB with three containers (Users, Places, Memories)  
+✅ Deploy Azure OpenAI with GPT-4 and text-embedding-ada-002 models  
+✅ Configure managed identity and role assignments  
+✅ Create a Python virtual environment (`.venv-travel`)  
+✅ Install all Python dependencies from `requirements.txt`  
+✅ Seed Cosmos DB with initial data:
+   - 4 users (Tony Stark, Steve Rogers, Peter Parker, Bruce Banner)
+   - ~2,900 places (hotels, restaurants, activities across multiple cities)
+   - 10 pre-existing memories
+
+### Expected Output
+
+You should see output like:
+
+```
+Provisioning Azure resources (azd up)
+Provisioned 1/12 resources.
+Provisioned 2/12 resources.
+...
+Provisioned 12/12 resources.
+
+✅ Environment file created at ./python/.env
+✅ Environment file created at ./mcp_server/.env
+
+═══════════════════════════════════════════════════════════════
+📦 Setting up Python virtual environment...
+═══════════════════════════════════════════════════════════════
+
+Creating Python virtual environment with python3.11...
+Activating virtual environment...
+Active Python version: Python 3.11.x
+Installing Python dependencies from requirements.txt...
+
+═══════════════════════════════════════════════════════════════
+📊 Loading data into Cosmos DB...
+═══════════════════════════════════════════════════════════════
+
+Seeding users...
+Seeding places...
+Seeding memories...
+
+✅ Setup complete!
+```
+
+**Provisioning typically takes 10-15 minutes.** The process creates all Azure resources and configures your local development environment.
+
+> **Note:** The Python virtual environment (`.venv-travel`) and environment files (`.env`) are created in the parent `01_exercises` directory, not in the `infra` folder.
+
+### Step 6: Open Visual Studio Code
+
+Once provisioning is complete, navigate back to the exercises directory and open the project in VS Code:
+
+**macOS/Linux:**
+```bash
+cd ..
 code .
 ```
 
-Trust the authors after opening visual studio code, by clicking on the **Yes, I trust the authors** button, like below.
+**Windows (PowerShell):**
+```powershell
+cd ..
+code .
+```
+
+When prompted, click **Yes, I trust the authors** to trust the workspace.
 
 ![Testing_3](./media/Module-00/Test-3.png)
+
+---
+
+## Activity 2: Verify Resources in Azure Portal
+
+Now that resources are provisioned, let's verify they were created correctly in the Azure Portal.
+
+### Step 1: Open Azure Portal
+
+Open your browser and navigate to: **https://portal.azure.com**
+
+Sign in with the same credentials you used for `azd auth login`.
+
+### Step 2: Find Your Resource Group
+
+1. In the search box at the top of the Azure Portal, type **`resource groups`**
+2. Click on **Resource groups** from the results
+3. Find and open the resource group that starts with **`rg-EnvironmentName`** (followed by your environment name)
+
+> **Note:** If the resource group doesn't appear immediately, wait a moment and refresh the page.
+
+### Step 3: Verify Deployments
+
+1. In your resource group, click on **Deployments** in the left menu under **Settings**
+2. Verify that all deployments completed successfully
+
+![Testing_1](./media/Module-00/Test-1.png)
+
+Your screen should look like this:
+
+![Testing 2](./media/Module-00/Test-2.png)
+
+### Step 4: Verify Resources
+
+In the **Overview** tab of your resource group, you should see the following resources:
+
+- **Azure Cosmos DB account** (starts with `cosmos-`)
+- **Azure OpenAI service** (starts with `aoai-`)
+- **User Assigned Managed Identity** (starts with `id-`)
+- **Application Insights** (optional, starts with `appi-`)
+
+If all resources are present and deployments are successful, you're ready to continue!
+
+> **Tip:** Keep the Azure Portal open in a browser tab - you'll use it to verify data in Activity 5.
 
 ## Activity 3: Start the API Server
 
 Let's start the backend API server.
 
-### Step 1: Navigate to the Source Directory
+### Step 1: Activate the Virtual Environment
 
-```powershell
-cd .\python\src\app
+The `azd up` command created a virtual environment named `.venv-travel` in the `01_exercises` directory. First, navigate back to the exercises directory, then activate it:
+
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises
+source .venv-travel/bin/activate
 ```
 
-### Step 2: Start the API Server with Uvicorn
+**Windows (PowerShell):**
+```powershell
+cd ~\travel-multi-agent-workshop\01_exercises
+.\.venv-travel\Scripts\Activate.ps1
+```
+
+You should see **(.venv-travel)** appear in your terminal prompt.
+
+> **Note (Windows):** If you encounter an execution policy error, run PowerShell as Administrator and execute:
+>
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
+### Step 2: Navigate to the Source Directory
+
+**macOS/Linux:**
+```bash
+cd python/src/app
+```
+
+**Windows (PowerShell):**
+```powershell
+cd python\src\app
+```
+
+### Step 3: Start the API Server with Uvicorn
 
 Run the API server using Uvicorn:
 
-```powershell
+```bash
 uvicorn travel_agents_api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Alternatively, you can run it directly with Python:
 
-```powershell
+```bash
 python travel_agents_api.py
 ```
 
@@ -135,19 +329,25 @@ Now let's start the Angular frontend application.
 
 ### Step 1: Open a New Terminal
 
-Open a new PowerShell window/tab (keep the API server running in the first terminal).
+Open a new terminal window/tab (keep the API server running in the first terminal).
 
 ### Step 2: Navigate to the Frontend Directory
 
+**macOS/Linux:**
+```bash
+cd ~/travel-multi-agent-workshop/01_exercises/frontend
+```
+
+**Windows (PowerShell):**
 ```powershell
-cd multi-agent-workshop\01_exercises\frontend
+cd ~\travel-multi-agent-workshop\01_exercises\frontend
 ```
 
 ### Step 3: Install Node Dependencies
 
 Install the required npm packages:
 
-```powershell
+```bash
 npm install
 ```
 
@@ -162,7 +362,7 @@ This will install:
 
 Start the Angular development server:
 
-```powershell
+```bash
 npm start
 ```
 
@@ -311,9 +511,10 @@ Click on "Chat Assistant" in the navigation menu. You should see:
 
 Your setup is successful if you can verify:
 
-✅ **Python virtual environment created** and activated  
+✅ **Azure resources provisioned** via `azd up`  
+✅ **Python virtual environment** (`.venv-travel`) **created** automatically  
 ✅ **Dependencies installed** without errors  
-✅ **Environment variables configured** in **.env** file  
+✅ **Environment variables configured** in `.env` files  
 ✅ **Database seeded successfully**:
 
 - 4 users in the Users container
@@ -329,63 +530,135 @@ Your setup is successful if you can verify:
 
 ## Troubleshooting
 
+### Issue: azd up Fails
+
+**Solution**: 
+
+1. Verify you're in the correct directory (`01_exercises/infra`)
+2. Verify you're logged in to the correct Azure tenant:
+   ```bash
+   azd auth login --tenant-id <TENANT_ID>
+   ```
+
+2. Confirm your subscription and tenant IDs are set:
+   ```bash
+   azd env get-values
+   ```
+
+3. Check you have appropriate permissions in the Azure subscription
+4. If issues persist, try running `azd down` to clean up any partial deployments, then retry `azd up`
+
 ### Issue: Virtual Environment Not Activating
 
 **Solution**: Ensure Python 3.11+ is installed:
 
+**macOS/Linux:**
+```bash
+python3 --version
+# or
+python3.11 --version
+```
+
+**Windows:**
 ```powershell
 python --version
 ```
 
-If you encounter an execution policy error when activating the virtual environment:
+If you encounter an execution policy error on Windows:
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Issue: pip install Fails
+### Issue: Dependencies Installation Fails
 
-**Solution**: Upgrade pip and try again:
+**Solution**: The `azd up` command should install dependencies automatically via the postprovision hook. If it failed:
 
-```powershell
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
+1. Activate the virtual environment manually:
+   
+   **macOS/Linux:**
+   ```bash
+   source .venv-travel/bin/activate
+   ```
+   
+   **Windows:**
+   ```powershell
+   .\.venv-travel\Scripts\Activate.ps1
+   ```
 
-### Issue: Seed Script Fails with Authentication Error
+2. Upgrade pip and reinstall:
+   ```bash
+   python -m pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
 
-**Solution**: The **.env** file should already be configured. If you encounter authentication errors:
+### Issue: Data Seeding Failed
 
-- Verify **COSMOSDB_ENDPOINT** and **COSMOS_KEY** in **python\.env**
+**Solution**: If the automatic seeding failed during `azd up`, run it manually:
+
+1. Activate the virtual environment (see above)
+2. Navigate to the python directory and run the seed script:
+
+   **macOS/Linux:**
+   ```bash
+   cd python
+   python data/seed_data.py
+   cd ..
+   ```
+   
+   **Windows:**
+   ```powershell
+   cd python
+   python data\seed_data.py
+   cd ..
+   ```
+
+### Issue: Authentication Error When Seeding Data
+
+**Solution**: Verify your `.env` file configuration:
+
+- Check `python/.env` exists and contains `COSMOSDB_ENDPOINT`
+- On Windows, verify `COSMOS_KEY` is present
 - Ensure the values match your Azure Cosmos DB account
-- Contact the workshop instructor if credentials are incorrect
-
-### Issue: Database or Containers Not Found
-
-**Solution**: The Cosmos DB database and containers should already exist. If you encounter errors:
-
-- Verify you're connected to the correct Azure subscription
-- Contact the workshop instructor to verify infrastructure deployment
+- Try logging in to Azure again: `azd auth login`
 
 ### Issue: API Server Won't Start
 
 **Solution**:
 
 1. Check if port 8000 is already in use:
+   
+   **macOS/Linux:**
+   ```bash
+   lsof -i :8000
+   ```
+   
+   **Windows:**
    ```powershell
    netstat -ano | findstr :8000
    ```
-2. Kill the process or change the port in **.env**
+
+2. Kill the process or change the port
 
 ### Issue: Frontend Won't Start
 
 **Solution**:
 
 1. Ensure Node.js 18+ is installed:
-   ```powershell
+   ```bash
    node --version
    ```
+
 2. Clear npm cache and reinstall:
+   
+   **macOS/Linux:**
+   ```bash
+   npm cache clean --force
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+   
+   **Windows:**
    ```powershell
    npm cache clean --force
    Remove-Item -Recurse -Force node_modules, package-lock.json
@@ -396,9 +669,9 @@ pip install -r requirements.txt
 
 **Solution**:
 
-1. Verify the API server is running
+1. Verify the API server is running on http://localhost:8000
 2. Check browser console for errors (F12)
-3. Verify the proxy configuration in **frontend/proxy.conf.json**:
+3. Verify the proxy configuration in `frontend/proxy.conf.json`:
    ```json
    {
      "/api": {
@@ -414,8 +687,11 @@ pip install -r requirements.txt
 
 Congratulations! You've successfully:
 
-- Set up your Python development environment with a virtual environment
-- Seeded Cosmos DB with users, places, and memories
+- Configured Azure authentication using Azure Developer CLI
+- Provisioned Azure resources (Cosmos DB, Azure OpenAI, and supporting services)
+- Verified resources in the Azure Portal
+- Automatically created a Python virtual environment (`.venv-travel`)
+- Installed dependencies and seeded Cosmos DB with users, places, and memories
 - Started the API server using Uvicorn
 - Launched the Angular frontend application
 - Verified data in Cosmos DB containers

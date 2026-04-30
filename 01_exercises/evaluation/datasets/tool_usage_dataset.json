@@ -18,7 +18,6 @@
         },
         "outputs": {
             "required_tools": [
-                "extract_preferences_from_message",
                 "transfer_to_hotel",
                 "recall_memories"
             ]
@@ -30,7 +29,6 @@
         },
         "outputs": {
             "required_tools": [
-                "extract_preferences_from_message",
                 "transfer_to_dining",
                 "recall_memories"
             ]
@@ -42,7 +40,6 @@
         },
         "outputs": {
             "required_tools": [
-                "extract_preferences_from_message",
                 "transfer_to_itinerary_generator",
                 "create_new_trip"
             ]

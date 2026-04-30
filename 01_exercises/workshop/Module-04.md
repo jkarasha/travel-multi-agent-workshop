@@ -1168,17 +1168,36 @@ system:
 You are the Orchestrator for a multi-agent travel planning system. Your job is to analyze user messages, extract travel preferences, and route requests to appropriate specialized agents.
 
 # Core Responsibilities (In Order)
-1. **Extract and Store Preferences** - FIRST, check if the user message contains travel preferences
+1. **Extract and Store Preferences** - Check if the user message contains travel preferences
 2. **Route requests** - Use transfer_to_* tools based on user intent
 3. **Coordinate agent flow** - Decide which agent handles each request
 4. **Handle general conversation** - Greetings, clarifications, thanks
 5. **Never plan trips yourself** - Always delegate to specialists
 
-# Step 1: Memory Extraction (ALWAYS DO THIS FIRST)
+# Step 1: Check for Preferences (ONLY WHEN PRESENT)
 
-For EVERY user message, before routing:
+Before routing, quickly assess whether the user's message contains explicit travel preferences.
 
-## A. Extract Preferences
+**Call `extract_preferences_from_message` ONLY when the message contains:**
+- Dietary statements ("I'm vegan", "gluten-free", "no seafood")
+- Accessibility needs ("wheelchair accessible", "mobility assistance")
+- Budget/price preferences ("luxury", "budget-friendly", "under $200")
+- Style preferences ("boutique hotels", "outdoor activities", "fine dining")
+- Explicit likes/dislikes ("I love museums", "I hate crowds")
+- Cuisine preferences ("I prefer Italian food", "I'm into street food")
+
+**SKIP preference extraction and go directly to Step 2 (routing) when:**
+- Trip planning requests ("recommend a 3-day itinerary for NYC")
+- Place search requests ("find hotels in Barcelona", "what museums should I visit?")
+- Greetings ("hi", "hello", "thanks", "goodbye")
+- Confirmations ("yes", "save it", "go ahead", "sure", "sounds good")
+- Follow-up questions ("what about Day 2?", "any other options?", "tell me more")
+- System questions ("what can you do?", "how does this work?")
+- Itinerary modifications ("move Sagrada Familia to Day 1", "add this to my trip")
+
+This optimization avoids unnecessary tool calls and speeds up response time significantly.
+
+## A. Extract Preferences (only when message contains preferences)
 Call `extract_preferences_from_message` with:
 - `message`: The user's message text
 - `role`: "user"
@@ -2352,7 +2371,7 @@ WHERE c.userId = 'tony' AND c.superseded = false
 | Preferences not extracted    | Check `orchestrator.prompty` has Step 1: Memory Extraction          |
 | Conflicts not detected       | Verify `resolve_memory_conflicts` tool exists in orchestrator tools |
 | Summarization not triggering | Add `should_summarize()` check in `get_active_agent()` function     |
-| Memories not applied         | Ensure `discover_places` calls `recall_memories()` internally       |
+| Memories not applied         | Ensure specialist agents call `recall_memories()` before `discover_places()` and pass preferences as filters |
 
 ### Verification Checklist
 
@@ -3373,75 +3392,42 @@ def discover_places(
         logger.error(f"{traceback.format_exc()}")
         return []
 
-    # Get user memories for alignment
-    logger.info(f"🧠 Recalling user memories...")
-    memories = recall_memories(
-        user_id=user_id,
-        tenant_id=tenant_id,
-        query=query
-    )
-    logger.info(f"🧠 Found {len(memories)} memories")
-
-    # Memory alignment scoring and match reason generation
-    used_memory_ids = set()  # Track which memories were actually used
-
+    # Memory alignment scoring using the filters the agent already provided.
+    # The calling agent recalls memories BEFORE calling discover_places and
+    # encodes them as filters, so we score alignment against those filters
+    # instead of re-fetching memories (which would duplicate the embedding +
+    # Cosmos query the agent already did).
     for place in places:
         alignment_score = 0.0
         match_reasons = ["Hybrid search match (text + semantic)"]
 
-        # Check alignment with user memories
-        if memories:
-            for memory in memories:
-                memory_facets = memory.get("facets", {})
-                memory_id = memory.get("id")
-                memory_used = False
+        # Dietary alignment from filters
+        if dietary:
+            place_dietary = place.get("dietary", [])
+            for d in dietary:
+                if d in place_dietary:
+                    alignment_score += 0.3
+                    match_reasons.append(f"Matches {d} dietary preference")
 
-                # Dietary alignment
-                if "dietary" in memory_facets:
-                    memory_dietary = memory_facets["dietary"]
-                    place_dietary = place.get("dietary", [])
-                    if memory_dietary in place_dietary:
-                        alignment_score += 0.3
-                        match_reasons.append(f"Matches your {memory_dietary} preference")
-                        memory_used = True
+        # Price tier alignment from filters
+        if price_tier:
+            place_price = place.get("priceTier")
+            if price_tier == place_price:
+                alignment_score += 0.2
+                match_reasons.append(f"Matches {place_price} price preference")
 
-                # Price tier alignment
-                if "priceTier" in memory_facets:
-                    memory_price = memory_facets["priceTier"]
-                    place_price = place.get("priceTier")
-                    if memory_price == place_price:
-                        alignment_score += 0.2
-                        match_reasons.append(f"Matches your {place_price} preference")
-                        memory_used = True
+        # Accessibility alignment from filters
+        if accessibility:
+            place_access = place.get("accessibility", [])
+            for a in accessibility:
+                if a in place_access:
+                    alignment_score += 0.3
+                    match_reasons.append(f"Accessible: {a}")
 
-                # Accessibility alignment
-                if "accessibility" in memory_facets:
-                    memory_access = memory_facets["accessibility"]
-                    place_access = place.get("accessibility", [])
-                    if memory_access in place_access:
-                        alignment_score += 0.3
-                        match_reasons.append(f"Accessible: {memory_access}")
-                        memory_used = True
-
-                # Track this memory as used if it influenced the recommendation
-                if memory_used and memory_id:
-                    used_memory_ids.add(memory_id)
-
-        # Add memory alignment to place
         place["memoryAlignment"] = min(alignment_score, 1.0)
         place["matchReasons"] = match_reasons
 
-    # Update lastUsedAt only for memories that were actually used
-    if used_memory_ids:
-        logger.info(f"🔄 Updating lastUsedAt for {len(used_memory_ids)} memories that influenced recommendations")
-        for memory_id in used_memory_ids:
-            update_memory_last_used(
-                memory_id=memory_id,
-                user_id=user_id,
-                tenant_id=tenant_id
-            )
-
-    logger.info(f"✅ Returning {len(places)} places with memory alignment")
+    logger.info(f"✅ Returning {len(places)} places with filter-based alignment")
     return places
 
 
@@ -3453,10 +3439,9 @@ def discover_places(
 def create_new_trip(
         user_id: str,
         tenant_id: str,
-        scope: Dict[str, str],
-        dates: Dict[str, str],
-        travelers: List[str],
-        constraints: Optional[Dict[str, Any]] = None,
+        destination: str,
+        start_date: str,
+        end_date: str,
         days: Optional[List[Dict[str, Any]]] = None,
         trip_duration: Optional[int] = None
 ) -> Dict[str, Any]:
@@ -3466,11 +3451,10 @@ def create_new_trip(
     Args:
         user_id: User identifier
         tenant_id: Tenant identifier
-        scope: Trip scope (type: "city", id: "barcelona")
-        dates: Trip dates (start, end in ISO format)
-        travelers: List of traveler user IDs
-        constraints: Optional constraints (budgetTier, etc.)
-        days: Optional list of day-by-day itinerary (dayNumber, date, activities, etc.)
+        destination: Trip destination (e.g. "Barcelona, Spain")
+        start_date: Trip start date in ISO format (e.g. "2026-03-10")
+        end_date: Trip end date in ISO format (e.g. "2026-03-11")
+        days: Optional list of day-by-day itinerary (dayNumber, date, morning, lunch, afternoon, dinner, accommodation)
         trip_duration: Optional total number of days (calculated from days array if not provided)
 
     Returns:
@@ -3481,18 +3465,18 @@ def create_new_trip(
     trip_id = create_trip(
         user_id=user_id,
         tenant_id=tenant_id,
-        scope=scope,
-        dates=dates,
-        travelers=travelers,
-        constraints=constraints or {},
+        destination=destination,
+        start_date=start_date,
+        end_date=end_date,
         days=days or [],
         trip_duration=trip_duration
     )
 
     return {
         "tripId": trip_id,
-        "scope": scope,
-        "dates": dates,
+        "destination": destination,
+        "startDate": start_date,
+        "endDate": end_date,
         "tripDuration": trip_duration or len(days or []),
         "daysCount": len(days or [])
     }
@@ -4225,17 +4209,36 @@ system:
 You are the Orchestrator for a multi-agent travel planning system. Your job is to analyze user messages, extract travel preferences, and route requests to appropriate specialized agents.
 
 # Core Responsibilities (In Order)
-1. **Extract and Store Preferences** - FIRST, check if the user message contains travel preferences
+1. **Extract and Store Preferences** - Check if the user message contains travel preferences
 2. **Route requests** - Use transfer_to_* tools based on user intent
 3. **Coordinate agent flow** - Decide which agent handles each request
 4. **Handle general conversation** - Greetings, clarifications, thanks
 5. **Never plan trips yourself** - Always delegate to specialists
 
-# Step 1: Memory Extraction (ALWAYS DO THIS FIRST)
+# Step 1: Check for Preferences (ONLY WHEN PRESENT)
 
-For EVERY user message, before routing:
+Before routing, quickly assess whether the user's message contains explicit travel preferences.
 
-## A. Extract Preferences
+**Call `extract_preferences_from_message` ONLY when the message contains:**
+- Dietary statements ("I'm vegan", "gluten-free", "no seafood")
+- Accessibility needs ("wheelchair accessible", "mobility assistance")
+- Budget/price preferences ("luxury", "budget-friendly", "under $200")
+- Style preferences ("boutique hotels", "outdoor activities", "fine dining")
+- Explicit likes/dislikes ("I love museums", "I hate crowds")
+- Cuisine preferences ("I prefer Italian food", "I'm into street food")
+
+**SKIP preference extraction and go directly to Step 2 (routing) when:**
+- Trip planning requests ("recommend a 3-day itinerary for NYC")
+- Place search requests ("find hotels in Barcelona", "what museums should I visit?")
+- Greetings ("hi", "hello", "thanks", "goodbye")
+- Confirmations ("yes", "save it", "go ahead", "sure", "sounds good")
+- Follow-up questions ("what about Day 2?", "any other options?", "tell me more")
+- System questions ("what can you do?", "how does this work?")
+- Itinerary modifications ("move Sagrada Familia to Day 1", "add this to my trip")
+
+This optimization avoids unnecessary tool calls and speeds up response time significantly.
+
+## A. Extract Preferences (only when message contains preferences)
 Call `extract_preferences_from_message` with:
 - `message`: The user's message text
 - `role`: "user"

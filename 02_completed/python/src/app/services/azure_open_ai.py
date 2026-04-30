@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import logging
 from typing import List
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
@@ -37,7 +38,8 @@ model = AzureChatOpenAI(
     azure_deployment=AZURE_OPENAI_DEPLOYMENT,
     azure_ad_token_provider=token_provider,
     temperature=0.7,
-    streaming=True
+    streaming=True,
+    max_retries=1,
 )
 
 # Initialize LangChain embeddings model
@@ -79,9 +81,29 @@ def get_embeddings_model():
     return embeddings_model
 
 
+_STOPWORDS = frozenset({
+    "i", "me", "my", "we", "our", "you", "your", "he", "she", "it", "they",
+    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "will", "would", "could",
+    "should", "may", "might", "shall", "can", "need", "dare", "ought",
+    "and", "but", "or", "nor", "not", "so", "yet", "for", "with",
+    "about", "between", "through", "during", "before", "after",
+    "above", "below", "to", "from", "in", "out", "on", "off", "over",
+    "under", "of", "at", "by", "up", "down", "into", "that", "which",
+    "who", "whom", "this", "these", "those", "what", "there", "here",
+    "when", "where", "why", "how", "all", "each", "every", "both",
+    "few", "more", "most", "other", "some", "such", "no", "just",
+    "than", "too", "very", "also", "only", "then", "if", "else",
+    "find", "get", "show", "recommend", "want", "like", "prefer",
+    "help", "tell", "give", "make", "let", "please", "hi", "hello",
+    "day", "trip", "travel", "plan", "looking", "going", "things",
+})
+
+
 def extract_keywords(text: str, max_keywords: int = 5) -> List[str]:
     """
-    Extract keywords from text using LLM.
+    Extract keywords from text using simple NLP (no LLM call).
+    Filters stopwords and returns the most meaningful terms.
     
     Args:
         text: Text to extract keywords from
@@ -91,17 +113,16 @@ def extract_keywords(text: str, max_keywords: int = 5) -> List[str]:
         List of keyword strings
     """
     try:
-        prompt = f"""Extract {max_keywords} key phrases or topics from this text.
-Return only the keywords as a space-seprated list, nothing else.
-
-Text: {text}
-
-Keywords:"""
-        
-        response = model.invoke(prompt)
-        keywords_str = response.content.strip()
-        keywords = [k.strip() for k in keywords_str.split(",")]
-        return keywords[:max_keywords]
+        words = re.findall(r"[a-zA-Z\-]{3,}", text.lower())
+        seen = set()
+        keywords = []
+        for w in words:
+            if w not in _STOPWORDS and w not in seen:
+                seen.add(w)
+                keywords.append(w)
+            if len(keywords) >= max_keywords:
+                break
+        return keywords
     except Exception as e:
         logger.error(f"Error extracting keywords: {e}")
         return []

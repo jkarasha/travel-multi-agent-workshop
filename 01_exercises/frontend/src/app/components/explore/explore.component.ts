@@ -191,34 +191,32 @@ export class ExploreComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: (response) => {
         console.log('📥 Received response:', response);
         
-        // Backend now returns ALL messages from the session
+        // Backend returns only NEW messages (user + assistant) — append to existing
         if (Array.isArray(response)) {
-          console.log('Raw messages from backend:', response.map(m => ({ 
-            role: m.senderRole, 
-            timeStamp: m.timeStamp,
-            content: (m.text || m.content || '').substring(0, 50)
-          })));
+          // Remove the optimistic user message only if server returned a user message
+          const hasServerUserMsg = response.some(msg => msg.senderRole === 'User');
+          if (hasServerUserMsg) {
+            this.messages = this.messages.filter(m => !(m.role === 'user' && m.content === userMessage && !m.timestamp));
+          }
           
-          this.messages = response
-            .map(msg => ({
-              role: (msg.senderRole === 'User' ? 'user' : 'assistant') as 'user' | 'assistant',
-              content: msg.text || msg.content || '',
-              timestamp: msg.timeStamp
-            }))
-            .sort((a, b) => {
-              // Sort by timestamp ascending (oldest first)
-              const timeA = new Date(a.timestamp || 0).getTime();
-              const timeB = new Date(b.timestamp || 0).getTime();
-              console.log(`Comparing: ${a.timestamp} (${timeA}) vs ${b.timestamp} (${timeB})`);
-              return timeA - timeB;
-            });
+          const newMessages = response.map(msg => ({
+            role: (msg.senderRole === 'User' ? 'user' : 'assistant') as 'user' | 'assistant',
+            content: msg.text || msg.content || '',
+            timestamp: msg.timeStamp
+          }));
           
-          console.log('Sorted messages:', this.messages.map(m => ({
+          this.messages = [...this.messages, ...newMessages].sort((a: any, b: any) => {
+            const timeA = new Date(a.timestamp || 0).getTime();
+            const timeB = new Date(b.timestamp || 0).getTime();
+            return timeA - timeB;
+          });
+          
+          console.log('Appended messages:', newMessages.map(m => ({
             role: m.role,
-            timestamp: m.timestamp,
             content: m.content.substring(0, 50)
           })));
         } else if (response.messages && Array.isArray(response.messages)) {
+          // Fallback: if backend returns full list, replace
           this.messages = response.messages.sort((a: any, b: any) => {
             const timeA = new Date(a.timestamp || 0).getTime();
             const timeB = new Date(b.timestamp || 0).getTime();

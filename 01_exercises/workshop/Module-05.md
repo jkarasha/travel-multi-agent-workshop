@@ -312,10 +312,9 @@ These tools create and manage user trip itineraries:
 def create_new_trip(
     user_id: str,
     tenant_id: str,
-    scope: Dict[str, str],
-    dates: Dict[str, str],
-    travelers: List[str],
-    constraints: Optional[Dict[str, Any]] = None,
+    destination: str,
+    start_date: str,
+    end_date: str,
     days: Optional[List[Dict[str, Any]]] = None,
     trip_duration: Optional[int] = None
 ) -> Dict[str, Any]:
@@ -704,10 +703,9 @@ These functions manage trips and user profiles:
 def create_trip(
     user_id: str,
     tenant_id: str,
-    scope: Dict[str, str],
-    dates: Dict[str, str],
-    travelers: List[str],
-    constraints: Dict[str, Any],
+    destination: str,
+    start_date: str,
+    end_date: str,
     days: Optional[List[Dict[str, Any]]] = None,
     trip_duration: Optional[int] = None
 ) -> str:

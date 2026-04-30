@@ -39,19 +39,19 @@ To deploy the complete travel multi-agent assistant to your Azure account, follo
 
 1. **Clone the Repository**: Start by cloning this repository to your local machine.
     ```bash
-    git clone https://github.com/Azure-Samples/travel-multi-agent-workshop.git
-    cd travel-multi-agent-workshop
+    git clone https://github.com/AzureCosmosDB/travel-multi-agent-workshop.git
+    cd 02_completed
     ``` 
 
 2. **Install Prerequisites**: Ensure you have the following installed:
    - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
    - [Azure Developer CLI (azd)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd)
-   - [Python 3.8+](https://www.python.org/downloads/)
+   - [Python 3.11+](https://www.python.org/downloads/)
    - [Node.js and npm](https://nodejs.org/en/download/)
 
 3. **Login to Azure**: Use the Azure CLI to log in to your Azure account.
     ```bash
-    az login
+    azd auth login
     ```
 4. **Run azd up**: Navigate to the `travel-multi-agent-workshop/02_completed/infra` directory and run the following command to deploy the solution:
     ```bash
@@ -77,9 +77,11 @@ PYTHONPATH=../python python mcp_http_server.py
 ```
 
 **Windows (PowerShell):**
+```bash
 .\venv\Scripts\Activate.ps1
 cd mcp_server
-$env:PYTHONPATH="..\python"; python mcp_http_server.py
+$env:PYTHONPATH="..\python"
+python mcp_http_server.py
 ```
 
 **Windows (Command Prompt):**

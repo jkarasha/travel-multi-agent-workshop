@@ -41,7 +41,7 @@ from src.app.services.azure_cosmos_db import (
     memories_container, places_container, debug_logs_container, get_checkpoint_saver,
     create_session_record, get_session_by_id,
     append_message, get_session_messages, query_places_hybrid,
-    get_trip, query_memories, query_places_with_theme, query_places_filtered,
+    get_trip, query_memories, get_all_user_memories, query_places_with_theme, query_places_filtered,
     patch_active_agent, update_session_activity,
     create_user, get_all_users, get_user_by_id,
     store_debug_log, get_debug_log, query_debug_logs
@@ -110,12 +110,13 @@ class Trip(BaseModel):
     tripId: str
     userId: str
     tenantId: str
-    scope: Dict[str, str]  # {"type": "city", "id": "rome"}
-    dates: Dict[str, str]  # {"start": "2024-06-01", "end": "2024-06-04"}
-    travelers: List[str]
-    constraints: Dict[str, Any]  # {"budgetTier": 2}
+    destination: str  # "Paris, France"
+    startDate: str  # "2025-11-15"
+    endDate: str  # "2025-11-19"
+    tripDuration: Optional[int] = None
     days: List[Dict] = []  # Day-by-day itinerary
     status: str = TripStatus.PLANNING
+    createdAt: Optional[str] = None
 
 
 class MemoryType(str, Enum):
@@ -645,7 +646,7 @@ def delete_session(tenantId: str, userId: str, sessionId: str, background_tasks:
 # Chat Completion Endpoint
 # ============================================================================
 
-def store_debug_log_from_response(sessionId: str, tenantId: str, userId: str, response_data: List[Dict]) -> str:
+def store_debug_log_from_response(sessionId: str, tenantId: str, userId: str, response_data: List[Dict], debug_log_id: Optional[str] = None) -> str:
     """
     Extract debug information from LangGraph response and store in Cosmos DB.
     
@@ -654,6 +655,7 @@ def store_debug_log_from_response(sessionId: str, tenantId: str, userId: str, re
         tenantId: Tenant identifier
         userId: User identifier
         response_data: LangGraph response data containing agent messages
+        debug_log_id: Optional pre-generated debug log ID
     
     Returns:
         Debug log ID
@@ -707,7 +709,7 @@ def store_debug_log_from_response(sessionId: str, tenantId: str, userId: str, re
     
     # Store in Cosmos DB using the new function
     try:
-        debug_log_id = store_debug_log(
+        stored_id = store_debug_log(
             session_id=sessionId,
             tenant_id=tenantId,
             user_id=userId,
@@ -723,11 +725,12 @@ def store_debug_log_from_response(sessionId: str, tenantId: str, userId: str, re
             transfer_success=transfer_success,
             tool_calls=tool_calls,
             logprobs=logprobs,
-            content_filter_results=content_filter_results
+            content_filter_results=content_filter_results,
+            debug_log_id=debug_log_id
         )
         
-        logger.info(f"✅ Debug log stored: {debug_log_id} for session {sessionId} (agent: {agent_selected}, tokens: {total_tokens})")
-        return debug_log_id
+        logger.info(f"✅ Debug log stored: {stored_id} for session {sessionId} (agent: {agent_selected}, tokens: {total_tokens})")
+        return stored_id
     except Exception as e:
         logger.error(f"❌ Failed to store debug log: {e}")
         # Return a placeholder ID if storage fails
@@ -761,8 +764,7 @@ def extract_relevant_messages(
     
     logger.info(f"Last active agent: {last_agent_name}")
     
-    # Update active agent in session
-    patch_active_agent(tenantId, userId, sessionId, last_agent_name)
+    # Agent patching moved to _post_response_background for non-blocking response
     
     if not last_agent_node:
         return []
@@ -862,12 +864,48 @@ def process_messages_background(message_tuples: List[tuple], userId: str, tenant
                 tool_calls=tool_calls
             )
         
-        # Update session activity
-        update_session_activity(sessionId, tenantId, userId)
+        # Update session activity with actual message count
+        update_session_activity(sessionId, tenantId, userId, message_count=len(message_tuples))
         
         logger.info(f"✅ Stored {len(message_tuples)} messages for session {sessionId}")
     except Exception as e:
         logger.error(f"Error storing messages: {e}")
+
+
+def _post_response_background(sessionId: str, tenantId: str, userId: str, response_data, messages, debug_log_id: str):
+    """
+    Background task: store debug log, persist messages, update agent state.
+    Runs after HTTP response is already sent to the client.
+    Each step is guarded independently so one failure doesn't block the others.
+    """
+    # Step 1: Store debug log
+    try:
+        store_debug_log_from_response(sessionId, tenantId, userId, response_data, debug_log_id=debug_log_id)
+    except Exception as e:
+        logger.error(f"❌ Failed to store debug log for session {sessionId}: {e}")
+    
+    # Step 2: Persist messages (runs even if debug log failed)
+    try:
+        process_messages_background(messages, userId, tenantId, sessionId)
+    except Exception as e:
+        logger.error(f"❌ Failed to persist messages for session {sessionId}: {e}")
+    
+    # Step 3: Patch active agent
+    try:
+        last_agent_name = "unknown"
+        for i in range(len(response_data) - 1, -1, -1):
+            if "__interrupt__" in response_data[i]:
+                if i > 0:
+                    last_agent_name = list(response_data[i - 1].keys())[0]
+                break
+        if last_agent_name == "unknown" and response_data:
+            last_agent_name = list(response_data[-1].keys())[0] if response_data[-1] else "unknown"
+        
+        patch_active_agent(tenantId, userId, sessionId, last_agent_name)
+    except Exception as e:
+        logger.error(f"❌ Failed to patch active agent for session {sessionId}: {e}")
+    
+    logger.info(f"✅ Background processing complete for session {sessionId}")
 
 
 @app.post(
@@ -947,40 +985,25 @@ async def get_chat_completion(
             
             response_data = await workflow.ainvoke(last_state, config, stream_mode="updates")
         
-        # Store debug log in Cosmos DB
-        debug_log_id = store_debug_log_from_response(sessionId, tenantId, userId, response_data)
+        # Generate debug log ID upfront so it's available in the response
+        debug_log_id = str(uuid.uuid4())
         
-        # Extract messages
+        # Extract messages (lightweight — just parses response_data)
         messages = extract_relevant_messages(
             debug_log_id, last_active_agent, response_data, 
             tenantId, userId, sessionId
         )
         
-        # Store messages SYNCHRONOUSLY before returning (not in background)
-        # This ensures they're in the database when we retrieve all messages
-        process_messages_background(messages, userId, tenantId, sessionId)
-
-        # Now retrieve ALL messages from the database (including the ones we just stored)
-        all_messages = get_session_messages(sessionId, tenantId, userId)
+        # Build response immediately from extracted messages
+        response_models = [msg_model for msg_model, _ in messages]
         
-        # Convert to MessageModel format for API response
-        return [
-            MessageModel(
-                id=msg.get("id", str(uuid.uuid4())),
-                type="message",
-                sessionId=sessionId,
-                tenantId=tenantId,
-                userId=userId,
-                timeStamp=msg.get("ts") or msg.get("timeStamp", datetime.utcnow().isoformat()),
-                sender=msg.get("sender", "Assistant"),
-                senderRole="User" if msg.get("role") == "user" else "Assistant",
-                text=msg.get("content", ""),
-                debugLogId=msg.get("debugLogId", ""),
-                tokensUsed=msg.get("tokensUsed", 0),
-                rating=msg.get("rating")
-            )
-            for msg in all_messages
-        ]
+        # Offload ALL storage to background (debug log, messages, agent patch)
+        background_tasks.add_task(
+            _post_response_background,
+            sessionId, tenantId, userId, response_data, messages, debug_log_id
+        )
+        
+        return response_models
 
     except Exception as e:
         logger.error(f"Error in chat completion: {e}")
@@ -1059,7 +1082,7 @@ def get_user_trips(tenantId: str, userId: str):
         SELECT * FROM c 
         WHERE c.tenantId = @tenantId 
         AND c.userId = @userId
-        ORDER BY c.dates.start DESC
+        ORDER BY c.startDate DESC
         """
         
         items = list(trips_container.query_items(
@@ -1217,12 +1240,9 @@ def get_user_memories(
         List of Memory objects
     """
     try:
-        memory_types = [memoryType] if memoryType else None
-        memories = query_memories(
+        memories = get_all_user_memories(
             user_id=userId,
-            tenant_id=tenantId,
-            memory_types=memory_types,
-            min_salience=minSalience
+            tenant_id=tenantId
         )
         
         return [Memory(**mem) for mem in memories]
@@ -1275,12 +1295,12 @@ def delete_memory(tenantId: str, userId: str, memoryId: str):
     "/places/search",
     tags=[PLACES_TAG],
     summary="Search Places",
-    description="Vector search with optional filters (type, price, dietary, accessibility, tags) - useful for theme-based searches",
+    description="Hybrid search (full-text + vector) with optional filters (type, price, dietary, accessibility) - useful for theme-based searches",
     response_model=List[Place]
 )
 def search_places(search_request: PlaceSearchRequest):
     """
-    Search for hotels, restaurants, or attractions using vector similarity.
+    Search for hotels, restaurants, or attractions using hybrid RRF search.
     
     This endpoint uses semantic search with optional filters for type, price tier,
     dietary options, accessibility features, and tags.
@@ -1289,30 +1309,33 @@ def search_places(search_request: PlaceSearchRequest):
         search_request: PlaceSearchRequest with search parameters and optional filters
     
     Returns:
-        List of Place objects matching the search criteria (top 5 by vector similarity)
+        List of Place objects matching the search criteria
     """
     try:
-        # Generate embedding for query
-        vectors = generate_embedding(search_request.query)
-        
         # Extract filters
-        place_type = search_request.filters.get("type") if search_request.filters else None
-        price_tier = search_request.filters.get("priceTier") if search_request.filters else None
-        dietary = search_request.filters.get("dietary") if search_request.filters else None
-        accessibility = search_request.filters.get("accessibility") if search_request.filters else None
-        tags = search_request.filters.get("tags") if search_request.filters else None
+        filters = search_request.filters or {}
+        place_type = filters.get("type")
+        price_tier = filters.get("priceTier")
+        dietary = filters.get("dietary")
+        accessibility = filters.get("accessibility")
         
-        logger.info(f"🔍 search_places called with filters: type={place_type}, priceTier={price_tier}, dietary={dietary}, accessibility={accessibility}, tags={tags}")
+        # Coerce to lists (query_places_hybrid expects List[str])
+        if dietary and not isinstance(dietary, list):
+            dietary = [dietary]
+        if accessibility and not isinstance(accessibility, list):
+            accessibility = [accessibility]
         
-        # Query places with all filters
+        logger.info(f"🔍 search_places called with filters: type={place_type}, priceTier={price_tier}, dietary={dietary}, accessibility={accessibility}")
+        
+        # Call query_places_hybrid with the correct parameters
+        # The function handles embedding generation and keyword extraction internally
         places = query_places_hybrid(
-            vectors=vectors,
+            query=search_request.query,
             geo_scope_id=search_request.geoScope.lower(),
             place_type=place_type,
             price_tier=price_tier,
             dietary=dietary,
-            accessibility=accessibility,
-            tags=tags
+            accessibility=accessibility
         )
         
         return [Place(**place) for place in places]
