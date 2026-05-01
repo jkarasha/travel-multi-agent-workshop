@@ -3,7 +3,7 @@ import os
 import logging
 import json
 from typing import Any, Dict, List, Optional
-from langsmith import traceable
+from langfuse import observe
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 logging.getLogger("sse_starlette.sse").setLevel(logging.WARNING)
 logging.getLogger("openai._base_client").setLevel(logging.WARNING)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
-logging.getLogger("langsmith.client").setLevel(logging.WARNING)
 
 # Prompt directory
 PROMPT_DIR = os.path.join(os.path.dirname(__file__), '..', 'python', 'src', 'app', 'prompts')
@@ -87,7 +86,7 @@ print(f"📋 Authentication mode: {auth_mode.upper()}\n")
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def create_session(
     user_id: str,
     tenant_id: str = "",
@@ -116,7 +115,7 @@ def create_session(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def get_session_context(
     session_id: str,
     tenant_id: str,
@@ -155,7 +154,7 @@ def get_session_context(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def append_turn(
     session_id: str,
     tenant_id: str,
@@ -214,7 +213,7 @@ def append_turn(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def store_user_memory(
     user_id: str,
     tenant_id: str,
@@ -275,7 +274,7 @@ def store_user_memory(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def recall_memories(
     user_id: str,
     tenant_id: str,
@@ -323,7 +322,7 @@ def recall_memories(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def mark_span_summarized(
     session_id: str,
     tenant_id: str,
@@ -395,7 +394,7 @@ def mark_span_summarized(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def get_summarizable_span(
     session_id: str,
     tenant_id: str,
@@ -458,7 +457,7 @@ def get_summarizable_span(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def get_all_user_summaries(
     user_id: str,
     tenant_id: str
@@ -557,7 +556,7 @@ def call_llm_with_prompt(template: str, variables: Dict[str, Any], temperature: 
 
 
 @mcp.tool()
-@traceable
+@observe()
 def extract_preferences_from_message(
     message: str,
     role: str,
@@ -616,7 +615,7 @@ def extract_preferences_from_message(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def resolve_memory_conflicts(
     new_preferences: List[Dict[str, Any]],
     user_id: str,
@@ -692,7 +691,7 @@ def resolve_memory_conflicts(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def store_resolved_preferences(
     resolutions: List[Dict[str, Any]],
     user_id: str,
@@ -823,7 +822,7 @@ def store_resolved_preferences(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def discover_places(
         geo_scope: str,
         query: str,
@@ -933,7 +932,7 @@ def discover_places(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def create_new_trip(
         user_id: str,
         tenant_id: str,
@@ -981,7 +980,7 @@ def create_new_trip(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def get_trip_details(
         trip_id: str,
         user_id: str,
@@ -1003,7 +1002,7 @@ def get_trip_details(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def update_trip(
         trip_id: str,
         user_id: str,
@@ -1045,7 +1044,7 @@ def update_trip(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def search_user_threads(
         user_id: str,
         tenant_id: str,
@@ -1138,7 +1137,7 @@ def search_user_threads(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def record_api_call(
     session_id: str,
     tenant_id: str,
@@ -1187,7 +1186,7 @@ def record_api_call(
 # ============================================================================
 
 @mcp.tool()
-@traceable
+@observe()
 def transfer_to_hotel(
     reason: str
 ) -> str:
@@ -1221,7 +1220,7 @@ def transfer_to_hotel(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def transfer_to_activity(
     reason: str
 ) -> str:
@@ -1255,7 +1254,7 @@ def transfer_to_activity(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def transfer_to_dining(
     reason: str
 ) -> str:
@@ -1289,7 +1288,7 @@ def transfer_to_dining(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def transfer_to_itinerary_generator(
     reason: str
 ) -> str:
@@ -1323,7 +1322,7 @@ def transfer_to_itinerary_generator(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def transfer_to_summarizer(
     reason: str
 ) -> str:
@@ -1357,7 +1356,7 @@ def transfer_to_summarizer(
 
 
 @mcp.tool()
-@traceable
+@observe()
 def transfer_to_orchestrator(
     reason: str
 ) -> str:

@@ -21,7 +21,7 @@ from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.graph import StateGraph, START, MessagesState
 from langgraph.prebuilt import create_react_agent
 from langgraph.types import Command, interrupt
-from langsmith import traceable
+from langfuse import observe
 from langgraph_checkpoint_cosmosdb import CosmosDBSaver
 
 from src.app.services.azure_open_ai import model
@@ -302,7 +302,7 @@ async def cleanup_persistent_session():
 # Agent Node Functions
 # ============================================================================
 
-@traceable(run_type="llm")
+@observe(as_type="generation")
 async def call_orchestrator_agent(state: MessagesState, config) -> Command[Literal["orchestrator", "hotel", "activity", "dining", "itinerary_generator", "summarizer", "human"]]:
     """
     Orchestrator agent: Routes requests using transfer_to_ tools.
@@ -355,7 +355,7 @@ async def call_orchestrator_agent(state: MessagesState, config) -> Command[Liter
     return Command(update=response, goto="human")
 
 
-@traceable(run_type="llm")
+@observe(as_type="generation")
 async def call_hotel_agent(state: MessagesState, config) -> Command[Literal["hotel", "itinerary_generator", "orchestrator", "human"]]:
     """
     Hotel Agent: Searches accommodations and stores hotel preferences.
@@ -403,7 +403,7 @@ async def call_hotel_agent(state: MessagesState, config) -> Command[Literal["hot
     return Command(update=response, goto="human")
 
 
-@traceable(run_type="llm")
+@observe(as_type="generation")
 async def call_activity_agent(state: MessagesState, config) -> Command[Literal["activity", "itinerary_generator", "orchestrator", "human"]]:
     """
     Activity Agent: Searches attractions and stores activity preferences.
@@ -435,7 +435,7 @@ async def call_activity_agent(state: MessagesState, config) -> Command[Literal["
     return Command(update=response, goto="human")
 
 
-@traceable(run_type="llm")
+@observe(as_type="generation")
 async def call_dining_agent(state: MessagesState, config) -> Command[Literal["dining", "itinerary_generator", "orchestrator", "human"]]:
     """
     Dining Agent: Searches restaurants and stores dining preferences.
@@ -467,7 +467,7 @@ async def call_dining_agent(state: MessagesState, config) -> Command[Literal["di
     return Command(update=response, goto="human")
 
 
-@traceable(run_type="llm")
+@observe(as_type="generation")
 async def call_itinerary_generator_agent(state: MessagesState, config) -> Command[Literal["itinerary_generator", "orchestrator", "human"]]:
     """
     Itinerary Generator: Synthesizes all gathered info into day-by-day plan.
@@ -499,7 +499,7 @@ async def call_itinerary_generator_agent(state: MessagesState, config) -> Comman
     return Command(update=response, goto="human")
 
 
-@traceable(run_type="llm")
+@observe(as_type="generation")
 async def call_summarizer_agent(state: MessagesState, config) -> Command[Literal["summarizer", "orchestrator", "human"]]:
     """
     Summarizer agent: Compresses conversation history.
@@ -532,7 +532,7 @@ async def call_summarizer_agent(state: MessagesState, config) -> Command[Literal
     return Command(update=response, goto="human")
 
 
-@traceable
+@observe()
 def human_node(state: MessagesState, config) -> None:
     """
     Human node: Interrupts for user input in interactive mode.

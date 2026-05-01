@@ -348,3 +348,8 @@ secrets.json
 secrets.yaml
 secrets.yml
 appsettings.local.json
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
